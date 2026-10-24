@@ -74,7 +74,7 @@ function addOutlines(){
   }
 }
 function rebuild(){
-  document.querySelector('#status').textContent='Generating the seven islands...';
+  document.querySelector('#status').textContent='Generating recipe-driven archipelago...';
   const start=performance.now();
   for(const obj of [...level.children]){
     level.remove(obj);
@@ -83,7 +83,7 @@ function rebuild(){
   }
   world=buildArchipelago(settings);
   exportRoot=new THREE.Group();
-  exportRoot.name='DuderWorld Archipelago V0.3 / meters / +Y up';
+  exportRoot.name='DuderWorld Archipelago recipe / meters / +Y up';
   for(const chunk of world.chunks){
     const islandNode=new THREE.Group(),bakeNode=new THREE.Group();
     islandNode.name=chunk.name;bakeNode.name=chunk.name;
@@ -113,10 +113,12 @@ function rebuild(){
     world.stats.meshes+' material batches';
   document.querySelector('#status').textContent=
     'Geometry built in '+((performance.now()-start)/1000).toFixed(1)+'s · all original math meshes · GLB-ready';
-  for(const [key,label] of [['spread','spreadValue'],['detail','detailValue'],['greenery','greeneryValue']]){
+  for(const [key,label] of [['islandCount','islandCountValue'],['spread','spreadValue'],['variation','variationValue'],['detail','detailValue'],['greenery','greeneryValue']]){
     document.querySelector('#'+key).value=settings[key];
     document.querySelector('#'+label).textContent=settings[key];
   }
+  document.querySelector('#topology').value=settings.topology;
+  resize();
 }
 function attachControls(){
   if(controls){controls.dispose();controls=null;}
@@ -168,6 +170,30 @@ document.querySelector('#bake').onclick=async e=>{
   }catch(err){console.error(err);document.querySelector('#status').textContent='Export failed: '+err.message;}
   finally{button.disabled=false;button.textContent='BAKE UNITY GLB';}
 };
+// TrontEOS consumes semantic metadata separately from static render geometry.
+document.querySelector('#metadata').onclick=()=>{
+  const sites=world.metadata.islands;
+  const collisionShapes=sites.map(s=>({id:'collision-'+s.id,
+    island:s.id,kind:'cylinder',position:[s.x,-.25,s.z],
+    radius:s.radius*.96,height:.5}));
+  const navLinks=[];
+  for(const e of world.metadata.bridges){
+    const dx=e.toX-e.fromX,dz=e.toZ-e.fromZ,len=Math.hypot(dx,dz);
+    collisionShapes.push({id:'collision-'+e.id,kind:'box',
+      position:[(e.fromX+e.toX)/2,-.12,(e.fromZ+e.toZ)/2],
+      size:[len+.8,.45,e.width],yawRadians:Math.atan2(-dz,dx)});
+    navLinks.push({id:e.id,from:[e.fromX,.1,e.fromZ],
+      to:[e.toX,.1,e.toZ],width:e.width,bidirectional:true});
+  }
+  const data={format:'tront-eos.world-metadata',version:4,
+    coordinateSystem:{units:'meters',up:'Y',deckHeight:0},
+    recipe:world.config,islands:sites,bridges:world.metadata.bridges,
+    adjacency:world.metadata.adjacency,
+    spawnPoints:world.metadata.spawnPoints,
+    interactables:world.metadata.interactables,
+    collisionShapes,navLinks};
+  saveBlob(JSON.stringify(data,null,2),'duderworld-v0-4.world.json','application/json');
+};
 document.querySelector('#recipe').onclick=()=>saveBlob(JSON.stringify({
   settings:world.config,metadata:world.metadata,stats:world.stats
 },null,2),'duderworld-archipelago-v0-3.recipe.json','application/json');
@@ -187,7 +213,10 @@ document.querySelector('#reroll').onclick=()=>{
 document.querySelector('#reset').onclick=()=>{
   Object.assign(settings,DEFAULT_ARCHIPELAGO);setMode('orbit');rebuild();
 };
-for(const name of ['spread','detail','greenery']){
+document.querySelector('#topology').addEventListener('change',e=>{
+  settings.topology=e.currentTarget.value;rebuild();
+});
+for(const name of ['islandCount','spread','variation','detail','greenery']){
   const input=document.querySelector('#'+name);
   input.addEventListener('input',()=>{
     document.querySelector('#'+name+'Value').textContent=Number(input.value);
@@ -384,8 +413,9 @@ function resize(){
   renderer.setSize(width,height,false);
   perspective.aspect=width/height;perspective.updateProjectionMatrix();
   walkCamera.aspect=width/height;walkCamera.updateProjectionMatrix();
-  overhead.left=-92*width/height;overhead.right=92*width/height;
-  overhead.top=92;overhead.bottom=-92;overhead.updateProjectionMatrix();
+  const reach=world?Math.max(92,...world.metadata.islands.map(s=>Math.hypot(s.x,s.z)+s.radius+8)):92;
+  overhead.left=-reach*width/height;overhead.right=reach*width/height;
+  overhead.top=reach;overhead.bottom=-reach;overhead.updateProjectionMatrix();
 }
 window.addEventListener('resize',resize);
 let prev=performance.now();

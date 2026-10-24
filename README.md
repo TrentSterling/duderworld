@@ -18,7 +18,7 @@ npm ci
 npm run test:layout
 npm run build:studio
 npm run test:archipelago
-npm run export:worldmeta -- -- # optional recipe/output arguments
+npm run export:worldmeta # optional recipe/output arguments
 ```
 
 **Important scope note:** the V0.4 standalone studio uses a simplified geometry preview. The existing V0.3 Three.js source retains its higher-detail 305,750-triangle art and now accepts `{islandCount, topology, variation, spread}`. Existing V0.3 prebuilt GLB and HTML remain unchanged. In the V0.3 generator, some decorative physics toys are still baked into the scenery; the metadata defines future separately spawned interactables for Unity, rather than claiming those have been decoupled already.
