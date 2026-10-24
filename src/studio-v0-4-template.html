@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DuderWorld V0.4 — Generator Studio</title>
+<style>
+:root{font:13px/1.5 system-ui,Segoe UI,sans-serif;background:#a9d7eb;color:#eef9f7}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden}
+canvas{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+canvas:active{cursor:grabbing}
+.panel{position:fixed;top:16px;left:16px;width:min(344px,calc(100vw - 28px));max-height:calc(100vh - 32px);
+overflow:auto;background:#102c3dea;border:1px solid #9bcbce75;border-radius:18px;padding:20px 19px;
+box-shadow:0 16px 60px #21405266;backdrop-filter:blur(19px)}
+.eyebrow{font-weight:800;font-size:10px;letter-spacing:2.1px;color:#7fdfd1}
+h1{font-size:27px;letter-spacing:-1px;line-height:1.05;margin:7px 0 5px;font-weight:950}
+h1 span{color:#ffb891}p{font-size:12px;color:#bdced6;margin:0 0 13px}
+#stats{background:#153f4d;color:#bcffee;padding:10px 11px;border-radius:9px;font:10px/1.5 ui-monospace,Consolas,monospace;margin-bottom:16px}
+.group{display:grid;grid-template-columns:1fr auto;gap:3px 12px;margin:13px 0;font-weight:650}
+.group span{font:12px ui-monospace,Consolas,monospace;color:#9df3dc}
+input[type=range]{grid-column:1/3;width:100%;accent-color:#75d8cb;cursor:pointer;margin:0}
+input[type=number],select{background:#285366;color:#fff;border:1px solid #56858c;border-radius:8px;padding:8px 9px;font:600 12px system-ui;outline:none}
+.group>input[type=number],.group>select{grid-column:1/3;width:100%}
+.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:17px}
+button{border:1px solid #56858c;color:#edfaf8;background:#285668;padding:10px 7px;border-radius:9px;font-weight:800;font-size:11px;cursor:pointer;transition:background .12s}
+button:hover{background:#367b88}button.primary{background:#ffbf9d;color:#17313d;border-color:#fce4cb}
+button.primary:hover{background:#ffdbb2}.full{grid-column:1/3}
+.status{color:#8eebce;font:11px/1.6 ui-monospace,monospace;margin-top:14px}
+#tests{color:#ffd48d;font:11px ui-monospace,monospace;margin-top:3px}
+.legend{position:fixed;right:16px;bottom:16px;background:#e7fff5dc;color:#335668;padding:11px 15px;border-radius:12px;font:700 11px/1.65 system-ui;box-shadow:0 5px 22px #26455a26}
+.legend small{font-size:10px;font-weight:500}
+@media(max-width:700px){.panel{top:8px;left:8px;max-height:75vh;padding:12px 13px;width:min(286px,calc(100vw - 16px))}h1{font-size:22px}.legend{font-size:10px;right:8px;bottom:8px}}
+</style></head><body>
+<canvas id="view" aria-label="3D procedural islands"></canvas>
+<main class="panel">
+<div class="eyebrow">TRONT-EOS · WORLD AUTHORING</div>
+<h1>DUDERWORLD <span>V0.4</span></h1>
+<p>Deterministic level graphs, procedural themed geometry, Unity-ready exports. This is an authoring preview, not a multiplayer game.</p>
+<div id="stats">Generating world…</div>
+<label class="group">Island count <span id="islandCountValue">7</span><input type="range" id="islandCount" min="3" max="12" step="1"></label>
+<label class="group">Bridge topology<select id="topology"><option value="radial">Radial hub (V0.3 default)</option><option value="ring">Ring + entry bridge</option><option value="chain">Connected chain</option><option value="hybrid">Hybrid mesh</option></select></label>
+<label class="group">Island separation <span id="spreadValue">1</span><input type="range" id="spread" min=".9" max="1.35" step=".05"></label>
+<label class="group">Procedural variation <span id="variationValue">0</span><input type="range" id="variation" min="0" max="1" step=".1"></label>
+<label class="group">Geometry detail <span id="detailValue">26</span><input type="range" id="detail" min="16" max="40" step="2"></label>
+<label class="group">Palm density <span id="greeneryValue">1</span><input type="range" id="greenery" min="0" max="2" step=".25"></label>
+<label class="group">Deterministic seed<input id="seed" type="number" step="1"></label>
+<div class="controls">
+<button id="reroll">REROLL SEED</button><button id="reset">RESET PRESET</button>
+<button id="recipe">SAVE RECIPE</button><button id="metadata">UNITY METADATA</button>
+<button id="bake" class="primary full">EXPORT STATIC GLB</button>
+<button id="testsBtn" class="full">RUN GRAPH / GEOMETRY CHECKS</button>
+</div>
+<div id="status" class="status">Starting…</div><div id="tests"></div>
+</main>
+<div class="legend">LMB orbit · RMB pan · scroll zoom<br><small>1 top-down · 2 overview · WASD pan · GLB contains static geometry only</small></div>
+<script>
+/* BUNDLED_GENERATOR_AND_STUDIO */
+</script></body></html>

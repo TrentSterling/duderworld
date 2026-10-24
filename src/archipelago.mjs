@@ -3,11 +3,13 @@
 // static toys and signage) has no dependency on avatars, browser or physics.
 // Units are meters. Y=0 is island walking surface, ocean ~= -3.6.
 import {Vector2,ShapeUtils} from 'three';
+import {generateLayoutGraph} from './layout-graph.mjs';
 import {MeshBucket,roundedBox,lathe,ellipsoid,arcBand,annulus,planter,
   trough,fountain,makeRandom} from './world.mjs';
 
 export const DEFAULT_ARCHIPELAGO=Object.freeze({
-  spread:1, detail:32, greenery:1, seed:20261024, oceanSize:360
+  spread:1, detail:32, greenery:1, seed:20261024, oceanSize:360,
+  islandCount:7, topology:'radial', variation:0
 });
 export const PALETTE={
   white:[255,246,226],cream:[244,227,199],ivory:[255,242,218],
@@ -182,12 +184,16 @@ function cliff(b,glow,site,detail){
 }
 // Wrapped perimeter walls have gaps oriented toward the central island.
 // Railings are structural: full-height plinths, caps and short illuminated posts.
-function rim(b,glow,site,detail,random,sites){
+function rim(b,glow,site,detail,random,sites,graph){
   const n=site.id==='skate'?88:48;
   const gap=site.id==='skate'?.15:.25;
-  const inlet=site.id==='skate'?null:bridgeAngle(site);
-  const entrances=site.id==='skate'?
-    sites.slice(1).map(s=>Math.atan2(s.z-site.z,s.x-site.x)):[inlet];
+  // Open retaining walls at actual edges, including ring and chain bridges.
+  const entrances=graph.edges
+    .filter(e=>e.from===site.id||e.to===site.id)
+    .map(e=>{
+      const other=sites.find(s=>s.id===(e.from===site.id?e.to:e.from));
+      return Math.atan2(other.z-site.z,other.x-site.x);
+    });
   for(let i=0;i<n;i++){
     const a=TAU*i/n,next=TAU*(i+1)/n;
     const omit=entrances.some(angle=>
@@ -725,21 +731,29 @@ function floatingRocks(b,random){
     }
   }
 }
-function worldSites(config){
-  return SITES.map(s=>({...s,
-    x:s.x*config.spread,z:s.z*config.spread,r:s.r,
-    seed:config.seed+Math.round(s.x*19+s.z*23),greenery:config.greenery}));
+function worldSites(config,graph){
+  const palettes={skate:'aqua',friends:'gold',voice:'violet',
+    sessions:'cyan',physics:'coral',arcade:'violet',network:'blue'};
+  return graph.nodes.map(s=>({...s,
+    palette:P[palettes[s.theme]]||P.aqua,
+    seed:config.seed+Math.round(s.x*19+s.z*23),
+    greenery:config.greenery}));
 }
 export function buildArchipelago(recipe={}){
   const config={...DEFAULT_ARCHIPELAGO,...recipe};
-  for(const name of ['spread','detail','greenery','oceanSize','seed'])
+  for(const name of ['spread','detail','greenery','oceanSize','seed','islandCount','variation'])
     if(!Number.isFinite(config[name]))throw new Error('Invalid '+name);
-  config.spread=clamp(config.spread,.90,1.25);
+  config.spread=clamp(config.spread,.90,1.35);
   config.detail=Math.round(clamp(config.detail,20,48));
   config.greenery=clamp(config.greenery,0,1.5);
   config.seed=config.seed|0;
   config.oceanSize=clamp(config.oceanSize,300,500);
-  const sites=worldSites(config),chunks=[],metadata={units:'meters',islands:[],bridges:[]};
+  const graph=generateLayoutGraph(config);
+  const sites=worldSites(config,graph),chunks=[],metadata={
+    units:'meters',islands:[],bridges:[],
+    version:4,recipe:graph.config,adjacency:graph.connections,
+    spawnPoints:graph.spawnPoints,interactables:graph.interactables
+  };
   for(const site of sites){
     const b=new MeshBucket(site.id+' solid'),glow=new MeshBucket(site.id+' emissive');
     const rand=makeRandom(site.seed);
@@ -749,12 +763,12 @@ export function buildArchipelago(recipe={}){
       pavers(b,site);
     });
     b.part('arcaded boundary, landscaping and site landing',()=>{
-      rim(b,glow,site,config.detail,rand,sites);
+      rim(b,glow,site,config.detail,rand,sites,graph);
       shoreline(b,site,rand);
       activityBackdrop(b,glow,site);
     });
     b.part(site.name+' original procedural activity architecture',()=>{
-      switch(site.id){
+      switch(site.theme){
         case 'skate':skatePark(b,glow,site,config.detail);break;
         case 'friends':friendsPlaza(b,glow,site);break;
         case 'voice':voiceLounge(b,glow,site);break;
@@ -769,9 +783,13 @@ export function buildArchipelago(recipe={}){
       radius:site.r,theme:site.theme});
   }
   const b=new MeshBucket('bridges solid'),glow=new MeshBucket('bridges emissive');
-  b.part('six continuous supported footbridges connecting all islands',()=>{
-    for(let k=1;k<sites.length;k++)
-      metadata.bridges.push(bridge(b,glow,sites[0],sites[k],k));
+  b.part('supported footbridges built from the recipe connectivity graph',()=>{
+    const byId=new Map(sites.map(s=>[s.id,s]));
+    for(const [i,edge] of graph.edges.entries())
+      metadata.bridges.push({
+        ...bridge(b,glow,byId.get(edge.from),byId.get(edge.to),i),
+        id:edge.id
+      });
   });
   chunks.push({name:'bridges',solid:b.output(),emissive:glow.output()});
   const ocean=new MeshBucket('ocean water');

@@ -1,3 +1,30 @@
+# DuderWorld V0.4 — procedural level generation for TrontEOS
+
+**Standalone offline V0.4 layout studio:** [static.html](static.html).
+**Original V0.3 authored world and GLB remain intact:** [duderworld-v0-3.html](duderworld-v0-3.html).
+
+V0.4 is a **tooling upgrade**, not a multiplayer minigame: DuderLab creates characters, DuderWorld builds environments, and Unity/TrontEOS owns networking, rigidbodies, gameplay and final runtime assembly. The offline studio is a lightweight WebGL/Canvas inspection tool. It is deliberately *not* a replacement for the full V0.3 art; the production `src/archipelago.mjs` now consumes the same deterministic layout graph.
+
+- 3–12 island recipes; radial, ring, chain or hybrid bridge graphs
+- Seeded layout variation, collision-free footprints, semantic zone names
+- Original V0.3 seven-island preset preserved as the default
+- Bridge openings driven by adjacency rather than hardcoded centre spokes
+- JSON recipes, Unity semantic metadata, collision proxies, navigation links
+- Static grouped GLB export from the studio (physics actors are not baked as actors)
+- WebGL2 display with Canvas2D fallback for restricted QA browsers
+
+```sh
+npm ci
+npm run test:layout
+npm run build:studio
+npm run test:archipelago
+npm run export:worldmeta -- -- # optional recipe/output arguments
+```
+
+**Important scope note:** the V0.4 standalone studio uses a simplified geometry preview. The existing V0.3 Three.js source retains its higher-detail 305,750-triangle art and now accepts `{islandCount, topology, variation, spread}`. Existing V0.3 prebuilt GLB and HTML remain unchanged. In the V0.3 generator, some decorative physics toys are still baked into the scenery; the metadata defines future separately spawned interactables for Unity, rather than claiming those have been decoupled already.
+
+---
+
 # DuderWorld V0.3 — Tront-EOS social archipelago
 
 **The newest scene is [duderworld-v0-3.html](duderworld-v0-3.html).** Open it
