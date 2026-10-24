@@ -1,0 +1,20 @@
+{
+  "renderer": {
+    "vendor": "Mesa",
+    "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "version": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+    "shading_language": "OpenGL ES GLSL ES 3.20",
+    "egl_version": "1.5"
+  },
+  "width": 1600,
+  "height": 1080,
+  "draw_calls": 18,
+  "source_hashes": {},
+  "vertices": 917250,
+  "attribute_vertices": 917250,
+  "indexed_draw_calls": 18,
+  "triangles": 305750,
+  "programs": 1,
+  "image": "/workspace/scratch/b025ef671811/duderworld-v0-2/docs/media/duderworld-v0-3-oblique.png",
+  "verification_scope": "Baked GLB position, normal and COLOR_0 rendered with simple QA GLSL by Mesa GLES3; not a browser screenshot."
+}

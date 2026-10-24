@@ -497,3 +497,6 @@ export function buildWorld(input={}){
 }
 
 export {C as PALETTE};
+// Shared procedural modelling primitives used by the larger archipelago scene.
+// Keeping a single implementation preserves the V0.2 bevel/weld/normal fixes.
+export {MeshBucket, roundedBox, lathe, ellipsoid, arcBand, annulus, planter, trough, fountain, portal, makeRandom};

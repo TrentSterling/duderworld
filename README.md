@@ -1,4 +1,64 @@
-# DuderWorld V0.2 — pastel geometry-first Three.js lobby
+# DuderWorld V0.3 — Tront-EOS social archipelago
+
+**The newest scene is [duderworld-v0-3.html](duderworld-v0-3.html).** Open it
+directly in a modern desktop browser: it is a **self-contained, offline**
+Three.js island world, no server, license-sensitive imported models, or CDN.
+
+![V0.3 world from directly above](docs/media/duderworld-v0-3-overhead.png)
+
+![V0.3 skatepark and connected activity islands](docs/media/duderworld-v0-3-skate.png)
+
+The [original archipelago concept](docs/concepts/duderworld-archipelago-concept-v0-3.png)
+is an aspirational illustration. V0.3 models its seven-area layout with:
+
+- One 47 m-wide central skate park: **two actual recessed bowl openings**
+  through the floor, curved halfpipe, kicker ramps, grind rail, toy blocks,
+  spectator benches and promenade.
+- Six physically connected smaller islands: friends plaza, positional voice
+  lounge, three matchmaking/session gates, co-op physics yard, arcade,
+  and networking observatory.
+- Irregular layered rocky coastlines, styled cliffs, foamy shoreline,
+  arched bridges with posts and structural supports, curved walls, towers,
+  lighthouses, neon panels, signs, pavers, palm trees and islands.
+- All baked geometry is **indexed with authored normals and vertex colors**,
+  with independent mesh groups for the seven islands, bridges, water and
+  offshore details. The default build contains **305,750 triangles /
+  227,625 indexed vertices / 18 static material batches**.
+- **60 instanced preview duders** populate all seven areas, waving,
+  walking and performing choreographed aerial tumbles. These animations
+  are **not real ragdoll physics and not connected to EOS**. They are
+  viewport-only scale references and do not enter the GLB export.
+
+Controls: drag orbit; right-drag pan; mousewheel zoom; press **1** for
+top-down, **2** or **F** for walk mode, click to capture the mouse, move with
+**WASD**, sprint with **Shift**, release pointer lock with **Esc**.
+The UI adjusts island spacing, level-of-detail and greenery, and supports
+**reroll**, outline preview, show/hide duders, recipe JSON export and
+**BAKE UNITY GLB**.
+
+For direct import, use [duderworld-archipelago-v0-3.glb](duderworld-archipelago-v0-3.glb):
+11.9 MB, glTF 2.0 with 18 mesh primitives under spatially grouped nodes.
+Unit = 1 meter, +Y up, platform top = 0 meters. Unity still needs
+colliders, spawned networked rigidbodies, navigation, duder controllers
+and actual EOS integration; scenic skateboards/balls/blocks in this bake
+are not individually networked interactables.
+
+### Rebuild and validate V0.3
+
+Run within this repo after npm ci:
+
+- npm run build:archipelago — creates the standalone V0.3 HTML.
+- npm run bake:archipelago — creates the indexed GLB.
+- npm run test:archipelago — checks the entire mesh including normals,
+  triangulation, both bowl holes, and the six bridge landings.
+
+The three docs/media/duderworld-v0-3-* PNGs are independent Mesa GLES 3
+software renderings of the baked GLB for geometry verification. Their simple
+shading does not represent Three.js lighting or a browser benchmark.
+
+---
+
+## Previous geometry-only interior (V0.2)
 
 A parametric, dense 3D lobby environment for future **Tront-EOS** demo scenes. The second geometry pass is a deliberate response to the generated top-down concept: the first room lacked architectural height, portal recesses, details, colour and landscaping. This build contains **level geometry only**: no duder characters, networking, physics, navmesh, or objectives.
 

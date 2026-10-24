@@ -1,9 +1,16 @@
 {
   "name": "duderworld",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Procedural level geometry for Tront-EOS sample scenes",
-  "scripts": {"build":"node build.mjs", "bake":"node qa/bake-glb.mjs", "test":"node qa/check-geometry.mjs && node qa/check-build.mjs"},
+  "scripts": {
+    "build":"node build.mjs",
+    "build:archipelago":"node build-archipelago.mjs",
+    "bake":"node qa/bake-glb.mjs",
+    "bake:archipelago":"node qa/bake-archipelago.mjs",
+    "test":"node qa/check-geometry.mjs && node qa/check-build.mjs && node qa/check-archipelago.mjs",
+    "test:archipelago":"node qa/check-archipelago.mjs"
+  },
   "dependencies": {
     "esbuild": "0.25.12",
     "three": "0.180.0"
