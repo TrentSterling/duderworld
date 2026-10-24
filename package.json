@@ -1,0 +1,11 @@
+{
+  "name": "duderworld",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Procedural level geometry for Tront-EOS sample scenes",
+  "scripts": {"build":"node build.mjs", "bake":"node qa/bake-glb.mjs", "test":"node qa/check-geometry.mjs && node qa/check-build.mjs"},
+  "dependencies": {
+    "esbuild": "0.25.12",
+    "three": "0.180.0"
+  }
+}

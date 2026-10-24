@@ -1,0 +1,61 @@
+{
+  "renderer": {
+    "vendor": "Mesa",
+    "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "version": "OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2",
+    "shading_language": "OpenGL ES GLSL ES 3.20",
+    "egl_version": "1.5"
+  },
+  "width": 1600,
+  "height": 980,
+  "draw_calls": 2,
+  "source_hashes": {},
+  "vertices": 200466,
+  "attribute_vertices": 200466,
+  "indexed_draw_calls": 2,
+  "triangles": 66822,
+  "programs": 1,
+  "shader_validation": [
+    {
+      "stage": "vertex",
+      "compiled": true,
+      "log": ""
+    },
+    {
+      "stage": "fragment",
+      "compiled": true,
+      "log": ""
+    },
+    {
+      "stage": "link",
+      "linked": true,
+      "log": ""
+    }
+  ],
+  "draws": [
+    {
+      "index": 0,
+      "method": "drawElements",
+      "vertices": 189852,
+      "unique_vertices": 37547,
+      "indices": 189852,
+      "submitted_vertices": 189852,
+      "mode": 4,
+      "elapsed_ms": 62.47,
+      "errors": []
+    },
+    {
+      "index": 1,
+      "method": "drawElements",
+      "vertices": 10614,
+      "unique_vertices": 1912,
+      "indices": 10614,
+      "submitted_vertices": 10614,
+      "mode": 4,
+      "elapsed_ms": 1.4,
+      "errors": []
+    }
+  ],
+  "image": "/workspace/scratch/b025ef671811/duderworld-v0-2/docs/media/duderworld-topdown.png",
+  "verification_scope": "Actual captured application GLSL and draw calls on Mesa llvmpipe GLES3; not browser interaction or hardware performance."
+}
