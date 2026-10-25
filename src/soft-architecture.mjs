@@ -12,6 +12,7 @@ export function roomWalkable(rooms,x,z,bodyRadius=.34){
   return rooms.every(room=>{
     const [cx,,cz]=room.center;
     if(Math.hypot(x-cx,z-cz)<room.centerKeepout+bodyRadius)return false;
+    if(room.decorativeKeepouts?.some(p=>Math.hypot(x-p.x,z-p.z)<p.radius+bodyRadius))return false;
     for(const [a0,a1] of room.wallArcs)
       if(distanceToArc(x,z,cx,cz,room.wallRadius,a0,a1)<room.wallWidth/2+bodyRadius)return false;
     for(const [a0,a1] of room.seatingArcs)
@@ -22,7 +23,7 @@ export function roomWalkable(rooms,x,z,bodyRadius=.34){
 export function roundedArc(b,{x=0,z=0,r,width,y0,y1,a0=0,a1=TAU,
   bevel=.16,color,detail=32}){
   const half=width/2,fillet=Math.min(bevel,half*.96,(y1-y0)*.48);
-  const profile=[],steps=3;
+  const profile=[],steps=bevel<.10?2:3;
   for(let i=0;i<=steps;i++){
     const t=i/steps*Math.PI/2;
     profile.push({q:half-fillet+fillet*Math.sin(t),y:y0+fillet-fillet*Math.cos(t),nr:Math.sin(t),ny:-Math.cos(t)});
@@ -49,7 +50,7 @@ export function roundedArc(b,{x=0,z=0,r,width,y0,y1,a0=0,a1=TAU,
   }
   if(a1-a0>TAU-1e-5)return;
   // Semicircular footprint at either end, rolled continuously into the crown.
-  const capSteps=10;
+  const capSteps=Math.max(4,Math.min(10,Math.ceil(width*6)));
   for(const [angle,direction] of [[a0,-1],[a1,1]]){
     const cx=x+r*Math.cos(angle),cz=z+r*Math.sin(angle);
     const at=(t,p)=>{const a=angle+direction*t;

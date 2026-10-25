@@ -23,7 +23,7 @@ for(const recipe of recipes){
     assert(room.minimumSeatingClearance>=3.5);
     assert(room.canopyClearHeight>=3);
     assert(room.seatingArcs.every(([a0,a1])=>a1-a0>=.35),'Invisible short seat in navigation');
-    if(room.island==='friends')assert(Math.abs(room.centerKeepout-.9112)<1e-6,'Fountain footprint mismatch');
+    if(room.island==='friends')assert(Math.abs(room.centerKeepout-1.36*.67)<1e-6,'Tea table footprint mismatch');
     assert(!roomWalkable([room],cx,cz),'Central furniture must block walk preview');
     // Sweep a real 3 m-wide corridor against the actual exported mesh, not
     // just metadata. Check standing waist and head heights in both lanes.

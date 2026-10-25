@@ -1,0 +1,701 @@
+{
+  "format": "tront-eos.world-metadata",
+  "version": 4,
+  "sourceBuild": "0.5.0",
+  "coordinateSystem": {
+    "units": "meters",
+    "up": "Y",
+    "deckHeight": 0
+  },
+  "recipe": {
+    "spread": 1,
+    "detail": 32,
+    "greenery": 1,
+    "seed": 20261024,
+    "oceanSize": 360,
+    "islandCount": 7,
+    "topology": "radial",
+    "variation": 0
+  },
+  "islands": [
+    {
+      "id": "skate",
+      "name": "SKATE PARK",
+      "x": 0,
+      "z": 0,
+      "radius": 23.5,
+      "theme": "skate",
+      "r": 23.5
+    },
+    {
+      "id": "friends",
+      "name": "FRIENDS",
+      "x": -43,
+      "z": -26,
+      "radius": 14.2,
+      "theme": "friends",
+      "r": 14.2
+    },
+    {
+      "id": "voice",
+      "name": "VOICE",
+      "x": 0,
+      "z": -46,
+      "radius": 14.2,
+      "theme": "voice",
+      "r": 14.2
+    },
+    {
+      "id": "sessions",
+      "name": "SESSIONS",
+      "x": 43,
+      "z": -26,
+      "radius": 14.2,
+      "theme": "sessions",
+      "r": 14.2
+    },
+    {
+      "id": "physics",
+      "name": "PHYSICS",
+      "x": -43,
+      "z": 28,
+      "radius": 14.7,
+      "theme": "physics",
+      "r": 14.7
+    },
+    {
+      "id": "arcade",
+      "name": "ARCADE",
+      "x": 0,
+      "z": 48,
+      "radius": 14.7,
+      "theme": "arcade",
+      "r": 14.7
+    },
+    {
+      "id": "network",
+      "name": "NET LAB",
+      "x": 43,
+      "z": 28,
+      "radius": 14.2,
+      "theme": "network",
+      "r": 14.2
+    }
+  ],
+  "bridges": [
+    {
+      "from": "skate",
+      "to": "friends",
+      "fromX": -19.42597175926299,
+      "fromZ": -11.74593641257762,
+      "toX": -31.33466159982939,
+      "toZ": -18.946539571989863,
+      "length": 13.916378105604451,
+      "width": 4.7,
+      "id": "bridge-1",
+      "deckLength": 13.916378105604451,
+      "centerDistance": 50.24937810560445
+    },
+    {
+      "from": "skate",
+      "to": "voice",
+      "fromX": 0,
+      "fromZ": -22.701,
+      "toX": 0,
+      "toZ": -32.368,
+      "length": 9.667000000000002,
+      "width": 4.7,
+      "id": "bridge-2",
+      "deckLength": 9.667000000000002,
+      "centerDistance": 46
+    },
+    {
+      "from": "skate",
+      "to": "sessions",
+      "fromX": 19.42597175926299,
+      "fromZ": -11.74593641257762,
+      "toX": 31.33466159982939,
+      "toZ": -18.946539571989863,
+      "length": 13.916378105604451,
+      "width": 4.7,
+      "id": "bridge-3",
+      "deckLength": 13.916378105604451,
+      "centerDistance": 50.24937810560445
+    },
+    {
+      "from": "skate",
+      "to": "physics",
+      "fromX": -19.023394520944635,
+      "fromZ": 12.38732666480116,
+      "toX": -31.17417102860796,
+      "toZ": 20.29946020467495,
+      "length": 14.499766442669987,
+      "width": 4.7,
+      "id": "bridge-4",
+      "deckLength": 14.499766442669987,
+      "centerDistance": 51.31276644266999
+    },
+    {
+      "from": "skate",
+      "to": "arcade",
+      "fromX": 0,
+      "fromZ": 22.701,
+      "toX": 0,
+      "toZ": 33.888000000000005,
+      "length": 11.187000000000005,
+      "width": 4.7,
+      "id": "bridge-5",
+      "deckLength": 11.187000000000005,
+      "centerDistance": 48
+    },
+    {
+      "from": "skate",
+      "to": "network",
+      "fromX": 19.023394520944635,
+      "fromZ": 12.38732666480116,
+      "toX": 31.576410109267556,
+      "toZ": 20.561383326964922,
+      "length": 14.979766442669991,
+      "width": 4.7,
+      "id": "bridge-6",
+      "deckLength": 14.979766442669991,
+      "centerDistance": 51.31276644266999
+    }
+  ],
+  "adjacency": {
+    "skate": [
+      "friends",
+      "voice",
+      "sessions",
+      "physics",
+      "arcade",
+      "network"
+    ],
+    "friends": [
+      "skate"
+    ],
+    "voice": [
+      "skate"
+    ],
+    "sessions": [
+      "skate"
+    ],
+    "physics": [
+      "skate"
+    ],
+    "arcade": [
+      "skate"
+    ],
+    "network": [
+      "skate"
+    ]
+  },
+  "spawnPoints": [
+    {
+      "id": "spawn-skate",
+      "kind": "player",
+      "island": "skate",
+      "position": [
+        0,
+        0.15,
+        7.05
+      ],
+      "forward": [
+        0,
+        0,
+        -1
+      ]
+    },
+    {
+      "id": "spawn-friends",
+      "kind": "player",
+      "island": "friends",
+      "position": [
+        -43,
+        0.15,
+        -21.740000000000002
+      ],
+      "forward": [
+        0,
+        0,
+        -1
+      ]
+    },
+    {
+      "id": "spawn-voice",
+      "kind": "player",
+      "island": "voice",
+      "position": [
+        0,
+        0.15,
+        -41.74
+      ],
+      "forward": [
+        0,
+        0,
+        -1
+      ]
+    },
+    {
+      "id": "spawn-sessions",
+      "kind": "player",
+      "island": "sessions",
+      "position": [
+        43,
+        0.15,
+        -21.740000000000002
+      ],
+      "forward": [
+        0,
+        0,
+        -1
+      ]
+    },
+    {
+      "id": "spawn-physics",
+      "kind": "player",
+      "island": "physics",
+      "position": [
+        -43,
+        0.15,
+        32.41
+      ],
+      "forward": [
+        0,
+        0,
+        -1
+      ]
+    },
+    {
+      "id": "spawn-arcade",
+      "kind": "player",
+      "island": "arcade",
+      "position": [
+        0,
+        0.15,
+        52.41
+      ],
+      "forward": [
+        0,
+        0,
+        -1
+      ]
+    },
+    {
+      "id": "spawn-network",
+      "kind": "player",
+      "island": "network",
+      "position": [
+        43,
+        0.15,
+        32.26
+      ],
+      "forward": [
+        0,
+        0,
+        -1
+      ]
+    }
+  ],
+  "interactables": [
+    {
+      "id": "toys-physics",
+      "island": "physics",
+      "kind": "physics-prop-spawner",
+      "position": [
+        -43,
+        0,
+        28
+      ],
+      "prefabTags": [
+        "cube",
+        "ball",
+        "seesaw"
+      ]
+    }
+  ],
+  "rooms": [
+    {
+      "island": "friends",
+      "kind": "soft-social-pavilion",
+      "center": [
+        -43,
+        0,
+        -26
+      ],
+      "wallRadius": 9.55,
+      "wallWidth": 0.92,
+      "height": 4.94,
+      "canopyClearHeight": 4.17,
+      "centerKeepout": 0.9112000000000001,
+      "decorativeKeepouts": [
+        {
+          "x": -41.5992653099419,
+          "z": -17.748040091707438,
+          "radius": 0.6264,
+          "kind": "ceramic-planter"
+        },
+        {
+          "x": -50.200399040488186,
+          "z": -30.267452830171276,
+          "radius": 0.6264,
+          "kind": "ceramic-planter"
+        }
+      ],
+      "entrances": [
+        0.5438324563021223
+      ],
+      "balconyAngles": [
+        -1.7477601972876706
+      ],
+      "wallArcs": [
+        [
+          1.0226533396529618,
+          4.056604226541077
+        ],
+        [
+          5.014245993242755,
+          6.348196880130869
+        ]
+      ],
+      "seatingArcs": [
+        [
+          0.9441446604117427,
+          4.135112905782296
+        ],
+        [
+          4.935737314001536,
+          6.426705559372088
+        ]
+      ],
+      "minimumEntryClearance": 7.880000000000001,
+      "minimumSeatingClearance": 3.75
+    },
+    {
+      "island": "voice",
+      "kind": "soft-social-pavilion",
+      "center": [
+        0,
+        0,
+        -46
+      ],
+      "wallRadius": 9.55,
+      "wallWidth": 0.92,
+      "height": 4.94,
+      "canopyClearHeight": 4.17,
+      "centerKeepout": 1.36,
+      "decorativeKeepouts": [
+        {
+          "x": -6.336698803433667,
+          "z": -40.53162288475252,
+          "radius": 0.6264,
+          "kind": "ceramic-planter"
+        },
+        {
+          "x": -0.07382983621273018,
+          "z": -54.369674375702125,
+          "radius": 0.6264,
+          "kind": "ceramic-planter"
+        }
+      ],
+      "entrances": [
+        1.5707963267948966
+      ],
+      "balconyAngles": [
+        -0.7207963267948966
+      ],
+      "wallArcs": [
+        [
+          2.049617210145736,
+          5.08356809703385
+        ],
+        [
+          6.041209863735529,
+          7.375160750623643
+        ]
+      ],
+      "seatingArcs": [
+        [
+          1.9711085309045169,
+          5.162076776275069
+        ],
+        [
+          5.96270118449431,
+          7.4536694298648625
+        ]
+      ],
+      "minimumEntryClearance": 7.880000000000001,
+      "minimumSeatingClearance": 3.75
+    }
+  ],
+  "collisionShapes": [
+    {
+      "id": "collision-skate",
+      "island": "skate",
+      "kind": "cylinder",
+      "position": [
+        0,
+        -0.25,
+        0
+      ],
+      "radius": 22.56,
+      "height": 0.5
+    },
+    {
+      "id": "collision-friends",
+      "island": "friends",
+      "kind": "cylinder",
+      "position": [
+        -43,
+        -0.25,
+        -26
+      ],
+      "radius": 13.632,
+      "height": 0.5
+    },
+    {
+      "id": "collision-voice",
+      "island": "voice",
+      "kind": "cylinder",
+      "position": [
+        0,
+        -0.25,
+        -46
+      ],
+      "radius": 13.632,
+      "height": 0.5
+    },
+    {
+      "id": "collision-sessions",
+      "island": "sessions",
+      "kind": "cylinder",
+      "position": [
+        43,
+        -0.25,
+        -26
+      ],
+      "radius": 13.632,
+      "height": 0.5
+    },
+    {
+      "id": "collision-physics",
+      "island": "physics",
+      "kind": "cylinder",
+      "position": [
+        -43,
+        -0.25,
+        28
+      ],
+      "radius": 14.111999999999998,
+      "height": 0.5
+    },
+    {
+      "id": "collision-arcade",
+      "island": "arcade",
+      "kind": "cylinder",
+      "position": [
+        0,
+        -0.25,
+        48
+      ],
+      "radius": 14.111999999999998,
+      "height": 0.5
+    },
+    {
+      "id": "collision-network",
+      "island": "network",
+      "kind": "cylinder",
+      "position": [
+        43,
+        -0.25,
+        28
+      ],
+      "radius": 13.632,
+      "height": 0.5
+    },
+    {
+      "id": "collision-bridge-1",
+      "kind": "box",
+      "position": [
+        -25.38031667954619,
+        -0.12,
+        -15.346237992283742
+      ],
+      "size": [
+        14.71637810560445,
+        0.45,
+        4.7
+      ],
+      "yawRadians": 2.5977601972876707
+    },
+    {
+      "id": "collision-bridge-2",
+      "kind": "box",
+      "position": [
+        0,
+        -0.12,
+        -27.5345
+      ],
+      "size": [
+        10.467000000000002,
+        0.45,
+        4.7
+      ],
+      "yawRadians": 1.5707963267948966
+    },
+    {
+      "id": "collision-bridge-3",
+      "kind": "box",
+      "position": [
+        25.38031667954619,
+        -0.12,
+        -15.346237992283742
+      ],
+      "size": [
+        14.71637810560445,
+        0.45,
+        4.7
+      ],
+      "yawRadians": 0.5438324563021224
+    },
+    {
+      "id": "collision-bridge-4",
+      "kind": "box",
+      "position": [
+        -25.098782774776296,
+        -0.12,
+        16.343393434738054
+      ],
+      "size": [
+        15.299766442669993,
+        0.45,
+        4.7
+      ],
+      "yawRadians": -2.5644004397163327
+    },
+    {
+      "id": "collision-bridge-5",
+      "kind": "box",
+      "position": [
+        0,
+        -0.12,
+        28.294500000000003
+      ],
+      "size": [
+        11.987000000000005,
+        0.45,
+        4.7
+      ],
+      "yawRadians": -1.5707963267948966
+    },
+    {
+      "id": "collision-bridge-6",
+      "kind": "box",
+      "position": [
+        25.299902315106095,
+        -0.12,
+        16.47435499588304
+      ],
+      "size": [
+        15.779766442669994,
+        0.45,
+        4.7
+      ],
+      "yawRadians": -0.5771922138734609
+    }
+  ],
+  "navLinks": [
+    {
+      "id": "bridge-1",
+      "from": [
+        -19.42597175926299,
+        0.1,
+        -11.74593641257762
+      ],
+      "to": [
+        -31.33466159982939,
+        0.1,
+        -18.946539571989863
+      ],
+      "width": 4.7,
+      "bidirectional": true
+    },
+    {
+      "id": "bridge-2",
+      "from": [
+        0,
+        0.1,
+        -22.701
+      ],
+      "to": [
+        0,
+        0.1,
+        -32.368
+      ],
+      "width": 4.7,
+      "bidirectional": true
+    },
+    {
+      "id": "bridge-3",
+      "from": [
+        19.42597175926299,
+        0.1,
+        -11.74593641257762
+      ],
+      "to": [
+        31.33466159982939,
+        0.1,
+        -18.946539571989863
+      ],
+      "width": 4.7,
+      "bidirectional": true
+    },
+    {
+      "id": "bridge-4",
+      "from": [
+        -19.023394520944635,
+        0.1,
+        12.38732666480116
+      ],
+      "to": [
+        -31.17417102860796,
+        0.1,
+        20.29946020467495
+      ],
+      "width": 4.7,
+      "bidirectional": true
+    },
+    {
+      "id": "bridge-5",
+      "from": [
+        0,
+        0.1,
+        22.701
+      ],
+      "to": [
+        0,
+        0.1,
+        33.888000000000005
+      ],
+      "width": 4.7,
+      "bidirectional": true
+    },
+    {
+      "id": "bridge-6",
+      "from": [
+        19.023394520944635,
+        0.1,
+        12.38732666480116
+      ],
+      "to": [
+        31.576410109267556,
+        0.1,
+        20.561383326964922
+      ],
+      "width": 4.7,
+      "bidirectional": true
+    }
+  ],
+  "bridgeLengthMeaning": "length and deckLength are deck spans; centerDistance is island-center distance",
+  "collisionNotes": "Island and bridge shapes are coarse proxies. Use the GLB for detailed bowl, ramp and room collision; room arcs describe navigation keepouts."
+}

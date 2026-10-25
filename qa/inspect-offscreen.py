@@ -44,7 +44,7 @@ with sync_playwright() as pw:
    });}''')
   print(name,json.dumps(result['views'][name]),flush=True)
  if a.video:
-  frames=out/'film';frames.mkdir(exist_ok=True)
+  frames=out/f'{a.label}-film';frames.mkdir(exist_ok=True)
   import math
   for i in range(180):
    t=i/180*math.pi*1.4

@@ -14,7 +14,7 @@ if(!globalThis.FileReader)globalThis.FileReader=class{
     this.onloadend?.({target:this});});}
 };
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
-const path=resolve(root,process.argv[2]||'duderworld-archipelago-v0-4-1.glb');
+const path=resolve(root,process.argv[2]||'duderworld-archipelago-v0-5-0.glb');
 const world=buildArchipelago();
 const linearByte=x=>{let c=x/255;return c<=.04045?c/12.92:Math.pow((c+.055)/1.055,2.4);};
 function geo(data){
@@ -23,10 +23,10 @@ function geo(data){
   g.setAttribute('position',new THREE.BufferAttribute(data.positions,3));
   g.setAttribute('normal',new THREE.BufferAttribute(data.normals,3));
   g.setAttribute('color',new THREE.BufferAttribute(colors,3));
-  g.setIndex(new THREE.BufferAttribute(data.indices,1));return g;
+  g.setIndex(new THREE.BufferAttribute(data.positions.length/3<=65535?new Uint16Array(data.indices):data.indices,1));return g;
 }
 const base=new THREE.Group();
-base.name='DuderWorld Archipelago V0.4.1 / meters / +Y up';
+base.name='DuderWorld Archipelago V0.5.0 / meters / +Y up';
 const solidMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.79,metalness:.015});
 const waterMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.31,metalness:.08,side:THREE.DoubleSide});
 const glowMat=new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide,toneMapped:false});

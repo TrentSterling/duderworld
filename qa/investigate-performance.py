@@ -8,11 +8,13 @@ from playwright.sync_api import sync_playwright
 
 ROOT=pathlib.Path(__file__).resolve().parent.parent
 OUT=ROOT/'evidence'/'performance-followup';OUT.mkdir(exist_ok=True)
-p=argparse.ArgumentParser();p.add_argument('--phase',choices=['baseline','attribution'],default='baseline');a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--phase',choices=['baseline','attribution','art'],default='baseline');a=p.parse_args()
 VIEWS={'world':[[109,125,134],[0,-1,0]],'voice':[[23,19,-23],[0,1,-46]]}
-SOURCE={'baseline':'evidence/baseline.html','reviewed':'duderworld-v0-4-1.html','legacy-rooms':'evidence/perf-fixtures/candidate-ablation.html?geometry=legacy-rooms'}
+SOURCE={'baseline':'evidence/baseline.html','reviewed':'duderworld-v0-4-1.html','current':'duderworld-v0-5-0.html','legacy-rooms':'evidence/perf-fixtures/candidate-ablation.html?geometry=legacy-rooms'}
 if a.phase=='baseline':
     contrasts=[('upstream-reviewed','baseline','reviewed','world','normal',6)]
+elif a.phase=='art':
+    contrasts=[('art-world','reviewed','current','world','normal',3),('art-voice','reviewed','current','voice','normal',3)]
 else:
     contrasts=[('world-shadow','reviewed','reviewed-fixed','world','normal',4),
                ('voice-shadow','reviewed','reviewed-fixed','voice','normal',4),
@@ -28,26 +30,27 @@ def hardware():
 MEASURE=r'''async()=>{
  const api=__duderworld,r=api.renderer,gl=r.getContext(),ext=gl.getExtension('EXT_disjoint_timer_query_webgl2');
  if(!ext)throw Error('No GPU timer query support');
- const raw=[],cpu=[],intervals=[],pending=[];let n=0,last=null,invalid=0,info=null;
+ const raw=[],timedQueries=[],cpu=[],intervals=[],pending=[];let n=0,last=null,invalid=0,info=null;
  const original=r.render.bind(r);r.info.autoReset=false;
  return await new Promise((resolve,reject)=>{
   const deadline=setTimeout(()=>{r.render=original;r.info.autoReset=true;reject(Error('GPU query timeout'));},20000);
   r.render=(s,c)=>{
    const disjoint=gl.getParameter(ext.GPU_DISJOINT_EXT);
-   while(pending.length&&gl.getQueryParameter(pending[0],gl.QUERY_RESULT_AVAILABLE)){
-    const q=pending.shift();if(!disjoint)raw.push(gl.getQueryParameter(q,gl.QUERY_RESULT)/1e6);else invalid++;
-    gl.deleteQuery(q);
+   if(disjoint)pending.forEach(p=>p.invalid=true);
+   while(pending.length&&gl.getQueryParameter(pending[0].q,gl.QUERY_RESULT_AVAILABLE)){
+    const p=pending.shift();if(!p.invalid){const ms=gl.getQueryParameter(p.q,gl.QUERY_RESULT)/1e6;raw.push(ms);timedQueries.push({ms,render:p.info});}else invalid++;
+    gl.deleteQuery(p.q);
    }
    const sampling=n>=60&&n<300;let q=null;
    if(sampling){q=gl.createQuery();gl.beginQuery(ext.TIME_ELAPSED_EXT,q);}
    r.info.reset();const t=performance.now();original(s,c);const end=performance.now();
-   if(q){gl.endQuery(ext.TIME_ELAPSED_EXT);pending.push(q);cpu.push(end-t);if(last!==null)intervals.push(t-last);last=t;info={...r.info.render};}
+   if(q){gl.endQuery(ext.TIME_ELAPSED_EXT);info={...r.info.render};pending.push({q,info,invalid:disjoint});cpu.push(end-t);if(last!==null)intervals.push(t-last);last=t;}
    n++;
    if(n>=300&&pending.length===0){
     clearTimeout(deadline);r.render=original;r.info.autoReset=true;
     const stats=x=>{const a=[...x].sort((a,b)=>a-b);return {median:a[Math.floor(a.length*.5)],p05:a[Math.floor(a.length*.05)],p95:a[Math.floor(a.length*.95)],samples:a.length};};
     const sun=api.scene.children.find(o=>o.isDirectionalLight);
-    resolve({gpu:stats(raw),rawGpuMs:raw,cpu:stats(cpu),interval:stats(intervals),invalid,render:info,
+    resolve({gpu:stats(raw),rawGpuMs:raw,timedQueries,cpu:stats(cpu),interval:stats(intervals),invalid,render:info,
      shadow:{position:sun.position.toArray(),target:sun.target.position.toArray(),projection:sun.shadow.camera.projectionMatrix.toArray(),matrix:sun.shadow.matrix.toArray(),map:sun.shadow.mapSize.toArray()},
      world:api.world().stats});
    }
@@ -58,6 +61,7 @@ MEASURE=r'''async()=>{
 result={'phase':a.phase,'viewport':[1600,1000],'dpr':1,'samplesPerRun':240,'warmupFrames':60,
  'headless':True,'muted':True,'animationTimeSeconds':10,'runs':[],
  'reviewedSha256':hashlib.sha256((ROOT/SOURCE['reviewed']).read_bytes()).hexdigest(),
+ 'currentSha256':hashlib.sha256((ROOT/SOURCE['current']).read_bytes()).hexdigest() if a.phase=='art' else None,
  'notes':'Chronological paired runs with alternating AB/BA order. Per-frame samples are not independent trial replications. No GPU clock or OS settings changed.'}
 errors=[]
 with sync_playwright() as pw:

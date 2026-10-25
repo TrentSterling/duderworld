@@ -4,13 +4,14 @@ No keyboard/mouse injection, canvas clicks, focus calls, or audio devices.
 import json,pathlib,struct
 from playwright.sync_api import sync_playwright
 ROOT=pathlib.Path(__file__).resolve().parent.parent
-OUT=ROOT/'evidence';OUT.mkdir(exist_ok=True)
+OUT=ROOT/'evidence'/'art';OUT.mkdir(exist_ok=True)
 with sync_playwright() as p:
  b=p.chromium.launch(headless=True,executable_path=r'C:\Users\trent\AppData\Local\ms-playwright\chromium-1217\chrome-win64\chrome.exe',args=['--mute-audio'])
  page=b.new_page(viewport={'width':1600,'height':1000},device_scale_factor=1)
  errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+ page.on('console',lambda message:errors.append(message.text) if message.type=='error' else None)
  page.add_init_script("Element.prototype.requestPointerLock=function(){throw Error('Forbidden QA pointer lock')};window.Audio=function(){throw Error('Forbidden QA audio')};")
- page.goto((ROOT/'duderworld-v0-4-1.html').as_uri());page.wait_for_function('window.__duderworld?.world()')
+ page.goto((ROOT/'duderworld-v0-5-0.html').as_uri());page.wait_for_function('window.__duderworld?.world()')
  page.evaluate('__duderworld.time(2.5)');page.wait_for_timeout(300)
  page.screenshot(path=str(OUT/'after-ui-world.png'))
  for view in ['Voice','Friends','Skate','World']:
@@ -38,7 +39,7 @@ with sync_playwright() as p:
   download=wait.value;path=OUT/('browser-'+download.suggested_filename);download.save_as(str(path));files[action]=str(path)
  recipe=json.loads(pathlib.Path(files['recipe']).read_text());meta=json.loads(pathlib.Path(files['metadata']).read_text())
  assert recipe['stats']==initial;assert meta==page.evaluate('__duderworld.metadata()')
- assert meta==json.loads((ROOT/'duderworld-v0-4-1.world.json').read_text()),'CLI/browser metadata mismatch'
+ assert meta==json.loads((ROOT/'duderworld-v0-5-0.world.json').read_text()),'CLI/browser metadata mismatch'
  assert len(meta['rooms'])==2 and meta['version']==4
  raw=pathlib.Path(files['bake']).read_bytes();magic,version,length=struct.unpack_from('<III',raw)
  assert magic==0x46546c67 and version==2 and length==len(raw)

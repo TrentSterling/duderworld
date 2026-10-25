@@ -5,7 +5,9 @@
 import {Vector2,ShapeUtils} from 'three';
 import {generateLayoutGraph} from './layout-graph.mjs';
 import {roundedArc,roomArcs,sweepArch} from './soft-architecture.mjs';
-import {MeshBucket,roundedBox,lathe,ellipsoid,arcBand as legacyArcBand,annulus,planter,
+import {ceramicPlanter as planter,islandPalm} from './botanical-kit.mjs';
+import {roundedBox} from './sculpted-primitives.mjs';
+import {MeshBucket,lathe,ellipsoid,arcBand as legacyArcBand,annulus,
   trough,fountain,makeRandom} from './world.mjs';
 
 export const DEFAULT_ARCHIPELAGO=Object.freeze({
@@ -13,15 +15,15 @@ export const DEFAULT_ARCHIPELAGO=Object.freeze({
   islandCount:7, topology:'radial', variation:0
 });
 export const PALETTE={
-  white:[255,246,226],cream:[244,227,199],ivory:[255,242,218],
-  tile:[245,239,222],pale:[237,228,216],stone:[209,196,181],
+  white:[250,240,218],cream:[233,218,196],ivory:[247,229,204],
+  tile:[236,226,209],pale:[219,221,209],stone:[190,185,173],
   warm:[248,207,173],sand:[222,181,144],rock:[152,145,148],
   rockDeep:[102,126,143],rockLight:[193,180,163],
-  coral:[255,122,111],rose:[246,154,155],pink:[246,154,155],peach:[255,183,156],
-  yellow:[255,215,110],gold:[243,177,75],
-  aqua:[73,212,214],cyan:[110,208,235],paleBlue:[188,219,239],sea:[40,181,197],
+  coral:[219,122,109],rose:[224,160,157],pink:[224,160,157],peach:[237,186,153],
+  yellow:[236,206,135],gold:[217,174,98],
+  aqua:[106,185,174],cyan:[123,191,201],paleBlue:[177,204,210],sea:[72,156,160],
   blue:[110,164,232],blueDark:[55,111,178],deep:[43,103,143],
-  lilac:[199,157,234],violet:[160,117,226],mint:[170,231,189],
+  lilac:[190,171,205],violet:[140,117,165],mint:[167,201,167],
   leaf:[86,186,96],leafDark:[37,140,104],leafLight:[137,211,110],
   teal:[37,148,150],ink:[57,85,112],water:[35,168,204],
   foam:[189,241,226],glow:[255,241,171],black:[34,55,79],
@@ -52,6 +54,13 @@ function orientedBox(b,position,size,r,color,yaw=0,detail=3){
     quad(a,c,d,e){b.quad(cv(a),cv(c),cv(d),cv(e));}
   };
   roundedBox(target,[0,0,0],size,r,color,detail);
+}
+function tiltedPillow(b,position,size,color,yaw,pitch=.16,roll=0){
+ const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch),cr=Math.cos(roll),sr=Math.sin(roll);
+ const rotate=([x,y,z])=>{const a=x*cr-y*sr,q=x*sr+y*cr,h=q*cp-z*sp,d=q*sp+z*cp;return[a*cy+d*sy,h,-a*sy+d*cy];};
+ const cv=v=>({...v,p:addPosition(rotate(v.p),position),n:rotate(v.n)});
+ const addPosition=(a,c)=>a.map((n,i)=>n+c[i]);
+ roundedBox({tri(a,c,d){b.tri(cv(a),cv(c),cv(d));},quad(a,c,d,e){b.quad(cv(a),cv(c),cv(d),cv(e));}},[0,0,0],size,.19,color,5);
 }
 function tube(b,a,z,radius,color,segments=9){
   const u=norm(sub(z,a));const side=norm(cross(Math.abs(u[1])>.88?[1,0,0]:[0,1,0],u));
@@ -149,17 +158,22 @@ function cliff(b,glow,site,detail){
     {r:.962,y:-2.06,c:P.rock}, {r:.837,y:-3.02,c:P.rockDeep},
     {r:.70,y:-3.83,c:P.rockDeep},
   ];
+  const contourPoint=(j,a)=>{
+    const l=levels[j],r=islandR(site,a,site.seed)*l.r;
+    return [site.x+r*Math.cos(a),l.y,site.z+r*Math.sin(a)];
+  };
   const ring=[];
   for(let j=0;j<levels.length;j++){
     const row=[],l=levels[j];
     for(let i=0;i<count;i++){
       const a=TAU*i/count;
-      const r=islandR(site,a,site.seed)*l.r*
-        (j<2?1:1+.045*Math.sin(a*17+j*1.4+site.seed*.03));
-      const p=[site.x+r*Math.cos(a),l.y,site.z+r*Math.sin(a)];
-      const next=levels[Math.max(0,j-1)],prev=levels[Math.min(levels.length-1,j+1)];
-      const rr=(next.r-prev.r)*site.r,dy=next.y-prev.y;
-      const n=norm([Math.cos(a)*Math.abs(dy),rr,Math.sin(a)*Math.abs(dy)]);
+      const p=contourPoint(j,a);
+      // Derive normals from the authored coastline, not an ideal cylinder.
+      // Shared angular stations keep the cliff bands smooth and coherent.
+      const tangent=sub(contourPoint(j,a+.001),contourPoint(j,a-.001));
+      const down=sub(contourPoint(Math.min(levels.length-1,j+1),a),contourPoint(Math.max(0,j-1),a));
+      let n=norm(cross(tangent,down));
+      if(n[0]*Math.cos(a)+n[2]*Math.sin(a)<0)n=mul(n,-1);
       row.push(vertex(p,n,l.c));
     }
     ring.push(row);
@@ -209,7 +223,7 @@ function rim(b,glow,site,detail,random,sites,graph){
       arcBand(b,site.x,site.z,radius+.28,radius+.42,.68,.84,a,next,
         i%7<3?site.palette:P.rose,7);
     }
-    if(i%4===0&&!omit){
+    if(i%8===0&&!omit){
       const x=site.x+Math.cos(a)*radius,z=site.z+Math.sin(a)*radius;
       const height=site.id==='skate'?2.12:2.57;
       lathe(b,x,z,[[.51,.04,P.ivory],[.67,.45,P.white],[.51,1.21,P.cream],
@@ -220,7 +234,7 @@ function rim(b,glow,site,detail,random,sites,graph){
     }
   }
   // Interior greenery placed around the wall, excluding bridge approaches.
-  const count=Math.round((site.id==='skate'?20:12)*site.greenery);
+  const count=Math.round((site.id==='skate'?10:6)*site.greenery);
   for(let i=0;i<count;i++){
     const a=TAU*(i+.36)/count;
     if(entrances.some(angle=>
@@ -270,6 +284,7 @@ function pavers(b,site){
   for(let j=0;j<rows;j++)for(let i=0;i<rows;i++){
     const x=site.x-inner+(i+.5)*pitch,z=site.z-inner+(j+.5)*pitch;
     if(!isInside(site,x,z,site.r*.17+pitch*.66)||maskBowls(site,x,z,.75))continue;
+    if(['voice','friends'].includes(site.id)&&Math.hypot(x-site.x,z-site.z)<9.6)continue;
     const seed=(Math.imul(i+101,73856093)^Math.imul(j+37,19349663))>>>0;
     const color=colorFor(seed%6),h=.024,w=.745,normal=[0,1,0];
     const a=[x-w,h,z-w],q=[x+w,h,z-w],c=[x+w,h,z+w],d=[x-w,h,z+w];
@@ -460,8 +475,8 @@ function palm(b,x,z,height,angle=0){
 function shoreline(b,site,random){
   // All decorative rocks sit at the foot of the cliff, leaving the walking
   // surface open. Palms lean away from spawn and bridge approaches.
-  for(let i=0;i<21;i++){
-    const a=TAU*i/21+(random()-.5)*.18,d=site.r*(1.07+random()*.2);
+  for(let i=0;i<11;i++){
+    const a=TAU*i/11+(random()-.5)*.18,d=site.r*(1.07+random()*.2);
     ellipsoid(b,[site.x+Math.cos(a)*d,-3.18,site.z+Math.sin(a)*d],
       [.70+random()*.55,.57+random()*.65,.61+random()*.5],
       [P.rock,P.rockLight,P.rockDeep][i%3],8,5,a);
@@ -472,7 +487,7 @@ function shoreline(b,site,random){
     const bridge=inletAngle(site);
     if(bridge!==null&&Math.abs(Math.atan2(Math.sin(a-bridge),Math.cos(a-bridge)))<.22)continue;
     const d=site.r*.95;
-    palm(b,site.x+d*Math.cos(a),site.z+d*Math.sin(a),3+random()*1.2,a+.3);
+    islandPalm(b,site.x+d*Math.cos(a),site.z+d*Math.sin(a),3+random()*1.2,a+.3);
   }
 }
 function inletAngle(site){return site.id==='skate'?null:bridgeAngle(site);}
@@ -603,9 +618,16 @@ function socialPavilion(b,glow,site,sites,graph,detail){
   const away=Math.atan2(z,x),radius=9.55;
   const options={radius,halfClearance:4.4,extraAngles:[away+.85]};
   const plan=roomArcs(site,sites,graph,options);
+  const decorativeKeepouts=[];
+  const ceramic=voice?[233,204,183]:[226,214,182];
+  const fabric=voice?[190,133,151]:[131,178,158];
+  const darkFabric=voice?[125,94,130]:[80,132,121];
+  // A continuous calm terrazzo field replaces the noisy checkerboard indoors.
+  disk(b,x,z,9.7,.032,P.tile,80);
+  annulus(b,x,z,9.05,9.14,.043,ceramic,80);
   for(const [a0,a1] of plan.arcs){
     const shell=(from,to,lo,hi)=>roundedArc(b,{x,z,r:radius,width:.92,y0:lo,y1:hi,
-      a0:from,a1:to,bevel:.22,color:P.ivory,detail});
+      a0:from,a1:to,bevel:.22,color:ceramic,detail});
     // Broad, genuinely open sea windows. Their sill and lintel are solids,
     // while the aperture contains no glass plane or emissive substitute.
     const mid=(a0+a1)/2,windowHalf=.16;
@@ -618,31 +640,81 @@ function socialPavilion(b,glow,site,sites,graph,detail){
     }else shell(a0,a1,.04,4.55);
     if(a1-a0>.32){
       const pads=a1-a0>1.1?[[a0+.09,mid-.23],[mid+.23,a1-.09]]:[[a0+.09,a1-.09]];
-      for(const [lo,hi] of pads)if(hi-lo>.12)roundedArc(b,{x,z,r:radius-.59,width:.12,y0:1.15,y1:3.17,
-        a0:lo,a1:hi,bevel:.055,color:upholstery,detail});
-      for(const [lo,hi] of pads)if(hi-lo>.12)roundedArc(glow,{x,z,r:radius-.56,width:.075,y0:3.54,y1:3.60,
-        a0:lo,a1:hi,bevel:.025,color:P.glow,detail});
+      for(const [lo,hi] of pads)if(hi-lo>.12){
+        const count=Math.max(1,Math.round((hi-lo)/.14));
+        for(let i=0;i<count;i++){
+          const aa=lo+(hi-lo)*i/count+.012,bb=lo+(hi-lo)*(i+1)/count-.012;
+          roundedArc(b,{x,z,r:radius-.57,width:.18,y0:1.28,y1:3.03+.10*Math.sin(i/count*Math.PI),
+            a0:aa,a1:bb,bevel:.08,color:mix(upholstery,P.ivory,.30+(i%3)*.035),detail:20});
+        }
+        roundedArc(b,{x,z,r:radius-.56,width:.15,y0:.84,y1:.99,a0:lo,a1:hi,bevel:.06,color:P.ivory,detail});
+        roundedArc(b,{x,z,r:radius-.58,width:.10,y0:3.42,y1:3.50,a0:lo,a1:hi,bevel:.04,color:P.glow,detail});
+        if(hi-lo>.46){
+          // An inset ceramic badge gives the room a legible social motif.
+          const aa=(lo+hi)*.5;
+          roundedArc(b,{x,z,r:radius-.73,width:.18,y0:1.57,y1:2.79,a0:aa-.075,a1:aa+.075,bevel:.085,color:ceramic,detail:20});
+          for(let k=-2;k<=2;k++){
+            const h=voice?.26+.48*(1-Math.abs(k)/3):.26+.38*Math.cos(k*.8);
+            roundedArc(b,{x,z,r:radius-.85,width:.08,y0:2.18-h/2,y1:2.18+h/2,
+              a0:aa+k*.025-.003,a1:aa+k*.025+.003,bevel:.035,color:darkFabric,detail:20});
+          }
+        }
+      }
     }
     // C-shaped canopy wings leave the arrival open to the sky. A narrow
     // coloured crown keeps the room's identity without a giant colour disk.
     roundedArc(b,{x,z,r:9.38,width:2.20,y0:4.17,y1:4.84,a0,a1,bevel:.29,color:P.ivory,detail});
-    roundedArc(b,{x,z,r:10.1,width:.35,y0:4.69,y1:4.94,a0,a1,bevel:.12,color:accent,detail});
+    roundedArc(b,{x,z,r:10.1,width:.35,y0:4.69,y1:4.94,a0,a1,bevel:.12,color:ceramic,detail});
+    roundedArc(b,{x,z,r:8.40,width:.18,y0:4.18,y1:4.43,a0:a0+.025,a1:a1-.025,bevel:.075,color:darkFabric,detail});
+    // Slim external reveals and a recessed plinth distinguish shell, crown and base.
+    roundedArc(b,{x,z,r:9.98,width:.12,y0:.16,y1:.37,a0,a1,bevel:.05,color:darkFabric,detail});
+    if(a1-a0>1.5)for(const aa of [a0+.38,a1-.38]){
+      const px=x+8.37*Math.cos(aa),pz=z+8.37*Math.sin(aa),scale=1.08;
+      planter(b,px,pz,scale,site.seed+Math.round(aa*100),{hero:true,potColor:ceramic});
+      decorativeKeepouts.push({x:px,z:pz,radius:.58*scale,kind:'ceramic-planter'});
+    }
+    // A suspended pebble lantern sits over upholstery, outside every approach.
+    if(a1-a0>.8){
+      const aa=a0+(a1-a0)*.28,rr=8.05,px=x+rr*Math.cos(aa),pz=z+rr*Math.sin(aa);
+      tube(b,[px,3.52,pz],[px,4.27,pz],.025,darkFabric,6);
+      lathe(b,px,pz,[[.08,3.49,P.gold],[.30,3.43,P.ivory],[.42,3.22,P.ivory],[.39,3.09,P.ivory],
+        [.22,3.04,P.glow],[.05,3.05,P.glow]],20);
+    }
   }
   const seating=roomArcs(site,sites,graph,{radius:6.8,halfClearance:2.65,extraAngles:options.extraAngles});
   seating.arcs=seating.arcs.filter(([a0,a1])=>a1-a0>=.35);
   for(const [a0,a1] of seating.arcs){
-    roundedArc(b,{x,z,r:6.75,width:1.55,y0:.12,y1:.68,a0,a1,bevel:.24,color:upholstery,detail});
-    roundedArc(b,{x,z,r:7.31,width:.46,y0:.49,y1:1.48,a0,a1,bevel:.21,color:accent,detail});
-    roundedArc(b,{x,z,r:6.75,width:1.25,y0:.65,y1:.79,a0:a0+.025,a1:a1-.025,bevel:.06,color:P.white,detail});
+    roundedArc(b,{x,z,r:6.75,width:1.42,y0:.16,y1:.42,a0,a1,bevel:.12,color:darkFabric,detail});
+    roundedArc(b,{x,z,r:7.31,width:.46,y0:.40,y1:1.48,a0,a1,bevel:.21,color:fabric,detail});
+    const count=Math.max(1,Math.round((a1-a0)*6.75/1.55)),step=(a1-a0)/count;
+    for(let i=0;i<count;i++){
+      const lo=a0+step*i+.012,hi=a0+step*(i+1)-.012;
+      const aa=(lo+hi)/2,rr=6.75;
+      // Real upholstered modules: tangent width is limited by the INNER edge
+      // of the bend, so adjacent cushions have a visible seam and no overlap.
+      const seatWidth=Math.max(.48,2*5.99*Math.tan(step/2)-.08);
+      orientedBox(b,[x+rr*Math.cos(aa),.61,z+rr*Math.sin(aa)],
+        [seatWidth,.43,1.46],.20,mix(fabric,P.ivory,i%3===0?.08:0),Math.PI/2-aa,5);
+      if(i%2===0){
+        const rr=7.12;
+        tiltedPillow(b,[x+rr*Math.cos(aa),1.20,z+rr*Math.sin(aa)],[1.03,.83,.40],
+          i%4===0?(voice?P.lilac:P.mint):mix(fabric,P.ivory,.32),Math.PI/2-aa,-.20,i%4===0?.08:-.07);
+      }
+    }
   }
   // Flat inlay preserves the deck and a wide central gathering area.
-  disk(b,x,z,4.45,.055,voice?P.paleBlue:P.warm,Math.max(48,detail*2));
-  annulus(b,x,z,4.45,4.57,.057,accent,Math.max(48,detail*2));
-  if(friends)fountain(b,x,z,.68);
-  else{
-    lathe(b,x,z,[[.62,.06,P.ivory],[.62,.59,P.ivory],[1.25,.62,P.ivory],
-      [1.36,.75,P.white],[1.25,.88,P.white]],32);
-    ellipsoid(b,[x,1.14,z],[.24,.32,.24],accent,12,8);
+  disk(b,x,z,4.45,.055,voice?[217,209,210]:[214,221,197],64);
+  annulus(b,x,z,4.34,4.45,.058,darkFabric,64);
+  annulus(b,x,z,4.11,4.16,.059,P.ivory,64);
+  // Low tea table: foot, pedestal, chamfered ceramic top, inset serving tray.
+  const tableScale=friends?.67:1;
+  lathe(b,x,z,[[.52,.08,darkFabric],[.62,.15,darkFabric],[.42,.24,ceramic],[.36,.54,ceramic],
+    [1.19,.57,ceramic],[1.31,.65,P.ivory],[1.36,.72,P.ivory],[1.33,.79,P.ivory],[1.19,.83,P.ivory]].map(([r,y,c])=>[r*tableScale,y,c]),32);
+  lathe(b,x,z,[[.53*tableScale,.833,darkFabric],[.56*tableScale,.867,darkFabric],[.51*tableScale,.881,ceramic]],24);
+  planter(b,x,z,.29,419,{baseY:.881,potColor:P.ivory});
+  for(const a of [.2,2.7]){
+    const px=x+Math.cos(a)*.85*tableScale,pz=z+Math.sin(a)*.85*tableScale;
+    lathe(b,px,pz,[[.10,.83,accent],[.13,.85,accent],[.13,1.0,accent],[.11,1.02,P.ivory],[.09,1.0,P.ink]],12);
   }
   // Threshold marks are inlaid rather than elevated sign blocks in the lane.
   for(const angle of plan.entrances){
@@ -651,7 +723,7 @@ function socialPavilion(b,glow,site,sites,graph,detail){
   }
   return {island:site.id,kind:'soft-social-pavilion',center:[x,0,z],
     wallRadius:radius,wallWidth:.92,height:4.94,canopyClearHeight:4.17,
-    centerKeepout:friends?1.34*.68:1.36,
+    centerKeepout:friends?1.36*.67:1.36,decorativeKeepouts,
     entrances:plan.entrances.slice(0,graph.connections[site.id].length),
     balconyAngles:options.extraAngles,wallArcs:plan.arcs,seatingArcs:seating.arcs,
     minimumEntryClearance:plan.clearance-.92,minimumSeatingClearance:5.3-1.55};
@@ -783,9 +855,12 @@ function floatingRocks(b,random){
     const [x,z]=locations[k],s=.9+random()*.85;
     ellipsoid(b,[x,-2.95,z],[1.6*s,1.2*s,1.5*s],
       k%3?P.rock:P.rockLight,10,6,k*.7);
-    if(k%2===0){
-      ellipsoid(b,[x,.02,z],[.9*s,.33*s,.7*s],P.leaf,10,5);
-      if(k%4===0)palm(b,x,z,2.8,k*.85);
+    // Keep offshore decoration grounded on the rock, never floating above it.
+    if(k%4===0){
+      const base=-2.95+1.2*s;
+      const shifted={tri(a,c,d){b.tri(...[a,c,d].map(q=>({...q,p:[q.p[0],q.p[1]+base,q.p[2]]})));},
+        quad(a,c,d,e){b.quad(...[a,c,d,e].map(q=>({...q,p:[q.p[0],q.p[1]+base,q.p[2]]})));}};
+      islandPalm(shifted,x,z,2.3,k*.85);
     }
   }
 }

@@ -1,4 +1,4 @@
-// DuderWorld Archipelago V0.4.1: original math meshes, browser preview,
+// DuderWorld Archipelago V0.5.0: original math meshes, browser preview,
 // GLB export, overhead survey, and optional animated scale-reference duders.
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -6,26 +6,27 @@ import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
 import {buildArchipelago,DEFAULT_ARCHIPELAGO} from './archipelago.mjs';
 import {roomWalkable} from './soft-architecture.mjs';
 import {createWorldMetadata} from './world-metadata.mjs';
+import {createNPRMaterial} from './npr-material.mjs';
 const TAU=Math.PI*2;
 
 const canvas=document.querySelector('#screen');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
 renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.08;
+renderer.toneMapping=THREE.LinearToneMapping;
+renderer.toneMappingExposure=1.0;
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0xa8ddeb);
-scene.fog=new THREE.Fog(0xa8ddeb,170,330);
-scene.add(new THREE.HemisphereLight(0xffffff,0x6b9eaf,1.65));
-const sun=new THREE.DirectionalLight(0xfff3e1,2.25);
+scene.background=new THREE.Color(0xb5d7d4);
+scene.fog=new THREE.Fog(0xb5d7d4,170,330);
+scene.add(new THREE.HemisphereLight(0xfff1dc,0x8c91b8,1.45));
+const sun=new THREE.DirectionalLight(0xfff0d8,1.72);
 sun.position.set(-41,92,57);sun.castShadow=true;
 sun.shadow.mapSize.set(2048,2048);
 sun.shadow.camera.left=-84;sun.shadow.camera.right=84;
 sun.shadow.camera.top=84;sun.shadow.camera.bottom=-84;
-sun.shadow.camera.far=230;sun.shadow.bias=-.00022;sun.shadow.normalBias=.035;
+sun.shadow.camera.far=230;sun.shadow.bias=-.0004;sun.shadow.normalBias=.07;
 sun.shadow.radius=3;scene.add(sun,sun.target);
 const sunOffset=new THREE.Vector3(-41,92,57),shadowDirection=sunOffset.clone().normalize();
 const shadowRight=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),shadowDirection).normalize();
@@ -38,12 +39,13 @@ const overhead=new THREE.OrthographicCamera(-100,100,100,-100,.1,650);
 overhead.position.set(0,210,.001);
 overhead.up.set(0,0,-1);overhead.lookAt(0,0,0);
 const walkCamera=new THREE.PerspectiveCamera(72,1,.075,300);
-const level=new THREE.Group();level.name='DuderWorld V0.4.1 / bakeable world geometry';
+const level=new THREE.Group();level.name='DuderWorld V0.5.0 / bakeable world geometry';
 const crowdRoot=new THREE.Group();crowdRoot.name='Preview scale-reference duders - NOT EXPORTED';
 scene.add(level,crowdRoot);
 
 const linearByte=x=>{const c=x/255;return c<=.04045?c/12.92:Math.pow((c+.055)/1.055,2.4);};
-const solidMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.79,metalness:.015});
+const solidMat=createNPRMaterial();
+const exportSolidMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.79,metalness:.015});
 const waterMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.31,metalness:.08,side:THREE.DoubleSide});
 const glowMat=new THREE.MeshBasicMaterial({vertexColors:true,toneMapped:false,side:THREE.DoubleSide});
 const outlineMat=new THREE.MeshBasicMaterial({color:0x3f5463,side:THREE.BackSide,toneMapped:false});
@@ -59,7 +61,7 @@ function makeGeometry(data){
   g.setAttribute('position',new THREE.BufferAttribute(data.positions,3));
   g.setAttribute('normal',new THREE.BufferAttribute(data.normals,3));
   g.setAttribute('color',new THREE.BufferAttribute(color,3));
-  g.setIndex(new THREE.BufferAttribute(data.indices,1));
+  g.setIndex(new THREE.BufferAttribute(data.positions.length/3<=65535?new Uint16Array(data.indices):data.indices,1));
   g.computeBoundingSphere();return g;
 }
 function expandedShell(geo,amount){
@@ -107,7 +109,7 @@ function rebuild(){
       level.add(mesh);
       // Same BufferGeometry in both groups. The hierarchy of the GLB encodes
       // island ownership, so Unity can generate per-island colliders/culling.
-      const exported=new THREE.Mesh(geo,mat);
+      const exported=new THREE.Mesh(geo,mat===solidMat?exportSolidMat:mat);
       exported.name=mesh.name;exported.castShadow=false;
       bakeNode.add(exported);
     }
@@ -172,7 +174,7 @@ document.querySelector('#bake').onclick=async e=>{
   const button=e.currentTarget;button.disabled=true;button.textContent='EXPORTING...';
   try{
     const binary=await new GLTFExporter().parseAsync(exportRoot,{binary:true,onlyVisible:true});
-    saveBlob(binary,'duderworld-archipelago-v0-4-1.glb','model/gltf-binary');
+    saveBlob(binary,'duderworld-archipelago-v0-5-0.glb','model/gltf-binary');
     document.querySelector('#status').textContent='Baked '+(binary.byteLength/1048576).toFixed(2)+
       ' MiB GLB · island groups, normals, colors, bridges and actual recessed bowls.';
   }catch(err){console.error(err);document.querySelector('#status').textContent='Export failed: '+err.message;}
@@ -185,7 +187,7 @@ document.querySelector('#metadata').onclick=()=>{
 };
 document.querySelector('#recipe').onclick=()=>saveBlob(JSON.stringify({
   settings:world.config,metadata:world.metadata,stats:world.stats
-},null,2),'duderworld-archipelago-v0-4-1.recipe.json','application/json');
+},null,2),'duderworld-archipelago-v0-5-0.recipe.json','application/json');
 document.querySelector('#view').onclick=()=>setMode(mode==='overhead'?'orbit':'overhead');
 document.querySelector('#walk').onclick=()=>setMode(mode==='walk'?'orbit':'walk');
 document.querySelector('#outlines').onclick=e=>{
@@ -459,7 +461,7 @@ function frame(now){
   frameShadows();
   renderer.render(scene,camera);
 }
-setMode('orbit');resize();rebuild();
+  setMode('orbit');resize();rebuild();focusSite('voice');
 // Deterministic inspection API: no input injection or pointer lock is needed.
 window.__duderworld={world:()=>world,scene,level,renderer,exportRoot:()=>exportRoot,
   view(position,target){setMode('orbit');camera.position.set(...position);

@@ -1,4 +1,26 @@
-# DuderWorld 0.4.1: rounded social rooms
+# DuderWorld 0.5.0: NPR garden lounges
+
+Open **[duderworld-v0-5-0.html](duderworld-v0-5-0.html)** offline. This art candidate adds original curved leaf blades, stems, rosette plants, turned ceramic pots, individual sofa cushions, tilted pillows, acoustic panels and social-room reliefs. Warm ceramic, rose upholstery and sea-glass green sit under a single-pass NPR shader with colored light bands and restrained opaque highlights. The connected world, skate park, controls and exports remain.
+
+The current world uses a corrected closed rounded-box primitive. The inherited helper duplicated the X faces and omitted Z faces; a new closed-surface regression test catches that defect. The historical V0.2 generator and the 0.4.1 HTML/GLB checkpoint are preserved.
+
+**Budget:** 385,348 static triangles, 292,636 indexed vertices, 18 static material batches. The visual improvements cost 33.6% more static triangles than 0.4.1. No new postprocessing, alpha foliage cards or texture downloads. Browser chunks and GLB use 16-bit indices where possible, with 32-bit fallback. Expanded browser/native triangle positions and colors match exactly, with normal differences below 1.1e-11.
+
+**Measurements:** three matched pairs per view at 1600 x 1000 DPR 1 on RTX 5070 Ti. Candidate run medians: whole world 2.725-3.101 ms; voice room 2.679-3.112 ms. GPU power states varied, so these do not establish a reliable speedup. [Full verification and limitations](docs/verification-v0-5-0.md), [timing JSON](docs/verification-v0-5-0.json).
+
+```sh
+npm ci
+npm run build
+npm run bake:archipelago   # duderworld-archipelago-v0-5-0.glb
+npm run export:worldmeta   # version-4 JSON, sourceBuild 0.5.0
+npm test
+```
+
+The GLB preserves mesh colors and Standard materials. **The custom NPR shader is a preview treatment and is not embedded in GLB**; Unity needs a material port. Duder Lab, EOS and physics integration remain separate. This has not been qualified on Quest or inside Unity.
+
+Original editable plant meshes are also available in the background-generated Blender study. Reproduce with `node qa/build-botanical-lab.mjs`, then Blender `--background --factory-startup --python qa/blender-botanical-study.py`. No desktop input or audio is used.
+
+## Preserved 0.4.1 checkpoint
 
 Open **[duderworld-v0-4-1.html](duderworld-v0-4-1.html)** directly in a desktop browser. It is a self-contained offline Three.js authoring preview. The voice lounge and friends courtyard now have continuous rounded wall shells, canopy wings, real sea-facing apertures and capsule-ended seating. The original connected skate park, activity islands, layout recipes and Duder Lab / Unity / TrontEOS separation remain intact.
 
