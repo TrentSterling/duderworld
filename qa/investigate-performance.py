@@ -8,13 +8,15 @@ from playwright.sync_api import sync_playwright
 
 ROOT=pathlib.Path(__file__).resolve().parent.parent
 OUT=ROOT/'evidence'/'performance-followup';OUT.mkdir(exist_ok=True)
-p=argparse.ArgumentParser();p.add_argument('--phase',choices=['baseline','attribution','art'],default='baseline');a=p.parse_args()
-VIEWS={'world':[[109,125,134],[0,-1,0]],'voice':[[23,19,-23],[0,1,-46]]}
-SOURCE={'baseline':'evidence/baseline.html','reviewed':'duderworld-v0-4-1.html','current':'duderworld-v0-5-0.html','legacy-rooms':'evidence/perf-fixtures/candidate-ablation.html?geometry=legacy-rooms'}
+p=argparse.ArgumentParser();p.add_argument('--phase',choices=['baseline','attribution','art','terrace'],default='baseline');a=p.parse_args()
+VIEWS={'world':[[109,125,134],[0,-1,0]],'voice':[[23,19,-23],[0,1,-46]],'arrival':[[6,4.7,-25],[0,2,-39]]}
+SOURCE={'baseline':'evidence/baseline.html','reviewed':'duderworld-v0-4-1.html','current':'duderworld-v0-5-0.html','terrace':'duderworld-v0-5-1.html','legacy-rooms':'evidence/perf-fixtures/candidate-ablation.html?geometry=legacy-rooms'}
 if a.phase=='baseline':
     contrasts=[('upstream-reviewed','baseline','reviewed','world','normal',6)]
 elif a.phase=='art':
     contrasts=[('art-world','reviewed','current','world','normal',3),('art-voice','reviewed','current','voice','normal',3)]
+elif a.phase=='terrace':
+    contrasts=[('terrace-'+view,'current','terrace',view,'normal',4) for view in ['world','voice','arrival']]
 else:
     contrasts=[('world-shadow','reviewed','reviewed-fixed','world','normal',4),
                ('voice-shadow','reviewed','reviewed-fixed','voice','normal',4),
@@ -61,7 +63,8 @@ MEASURE=r'''async()=>{
 result={'phase':a.phase,'viewport':[1600,1000],'dpr':1,'samplesPerRun':240,'warmupFrames':60,
  'headless':True,'muted':True,'animationTimeSeconds':10,'runs':[],
  'reviewedSha256':hashlib.sha256((ROOT/SOURCE['reviewed']).read_bytes()).hexdigest(),
- 'currentSha256':hashlib.sha256((ROOT/SOURCE['current']).read_bytes()).hexdigest() if a.phase=='art' else None,
+ 'currentSha256':hashlib.sha256((ROOT/SOURCE['current']).read_bytes()).hexdigest() if a.phase in ['art','terrace'] else None,
+ 'terraceSha256':hashlib.sha256((ROOT/SOURCE['terrace']).read_bytes()).hexdigest() if a.phase=='terrace' else None,
  'notes':'Chronological paired runs with alternating AB/BA order. Per-frame samples are not independent trial replications. No GPU clock or OS settings changed.'}
 errors=[]
 with sync_playwright() as pw:
@@ -82,8 +85,8 @@ with sync_playwright() as pw:
      page.evaluate('''()=>{const r=__duderworld.renderer,orig=r.render.bind(r),sun=__duderworld.scene.children.find(o=>o.isDirectionalLight);r.render=(s,c)=>{Object.assign(sun.shadow.camera,{left:-84,right:84,top:84,bottom:-84});sun.shadow.camera.updateProjectionMatrix();sun.position.set(-41,92,57);sun.target.position.set(0,0,0);orig(s,c);};}''')
     if shadow=='off':
      page.evaluate('''()=>{__duderworld.renderer.shadowMap.enabled=false;__duderworld.scene.traverse(o=>{if(o.material){for(const m of(Array.isArray(o.material)?o.material:[o.material]))m.needsUpdate=true;}});}''')
-    measurement=page.evaluate(MEASURE)
-    row={'contrast':label,'pair':pair,'variant':variant,'view':view,'shadowMode':shadow,'hardwareAfter':hardware(),**measurement}
+    hardware_before=hardware();measurement=page.evaluate(MEASURE)
+    row={'contrast':label,'pair':pair,'variant':variant,'view':view,'shadowMode':shadow,'hardwareBefore':hardware_before,'hardwareAfter':hardware(),**measurement}
     result['runs'].append(row);result['errors']=errors
     (OUT/f'{a.phase}-raw.json').write_text(json.dumps(result,indent=2))
     print(label,pair,variant,round(row['gpu']['median'],6),'ms',row['render']['calls'],'draws',row['hardwareAfter'],flush=True)

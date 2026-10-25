@@ -7,6 +7,7 @@ import {generateLayoutGraph} from './layout-graph.mjs';
 import {roundedArc,roomArcs,sweepArch} from './soft-architecture.mjs';
 import {ceramicPlanter as planter,islandPalm} from './botanical-kit.mjs';
 import {roundedBox} from './sculpted-primitives.mjs';
+import {arrivalTerrace} from './arrival-terrace.mjs';
 import {MeshBucket,lathe,ellipsoid,arcBand as legacyArcBand,annulus,
   trough,fountain,makeRandom} from './world.mjs';
 
@@ -239,6 +240,10 @@ function rim(b,glow,site,detail,random,sites,graph){
     const a=TAU*(i+.36)/count;
     if(entrances.some(angle=>
       Math.abs(Math.atan2(Math.sin(a-angle),Math.cos(a-angle)))<.31))continue;
+    if(['voice','friends'].includes(site.theme)){
+      const terrace=Math.atan2(site.z,site.x)+.85;
+      if(Math.abs(Math.atan2(Math.sin(a-terrace),Math.cos(a-terrace)))<.50)continue;
+    }
     const d=site.r*(.77+random()*.04),x=site.x+Math.cos(a)*d,z=site.z+Math.sin(a)*d;
     planter(b,x,z,.71+random()*.25,site.seed+i*19);
   }
@@ -345,7 +350,8 @@ function bowlMesh(b,glow,bowl,detail){
 function curvedRamp(b,x,z,w,d,depth,orientation=0){
   // Solid, walkable half-pipe trough. The deck climbs continuously from its
   // flat center to both coping lips; no disconnected wedge/prism impostors.
-  const steps=26,along=9,rows=[];
+  // The extrusion is exactly straight: one span preserves its full surface.
+  const steps=26,along=1,rows=[];
   const cs=Math.cos(orientation),sn=Math.sin(orientation);
   const point=(xx,y,zz)=>[x+xx*cs+zz*sn,y,z-xx*sn+zz*cs];
   for(let i=0;i<=steps;i++){
@@ -483,7 +489,13 @@ function shoreline(b,site,random){
   }
   const count=Math.round((site.id==='skate'?8:4)*site.greenery);
   for(let i=0;i<count;i++){
-    const a=TAU*(i+.43)/count;
+    let a=TAU*(i+.43)/count;
+    if(['voice','friends'].includes(site.theme)){
+      const terrace=Math.atan2(site.z,site.x)+.85;
+      const offset=Math.atan2(Math.sin(a-terrace),Math.cos(a-terrace));
+      // Frame the sea view with a palm; keep its trunk out of the opening.
+      if(Math.abs(offset)<.42)a=terrace+(offset<0?-.61:.61);
+    }
     const bridge=inletAngle(site);
     if(bridge!==null&&Math.abs(Math.atan2(Math.sin(a-bridge),Math.cos(a-bridge)))<.22)continue;
     const d=site.r*.95;
@@ -716,14 +728,18 @@ function socialPavilion(b,glow,site,sites,graph,detail){
     const px=x+Math.cos(a)*.85*tableScale,pz=z+Math.sin(a)*.85*tableScale;
     lathe(b,px,pz,[[.10,.83,accent],[.13,.85,accent],[.13,1.0,accent],[.11,1.02,P.ivory],[.09,1.0,P.ink]],12);
   }
+  const outdoor=arrivalTerrace(b,{x,z,entrances:plan.entrances.slice(0,graph.connections[site.id].length),
+    balconyAngle:options.extraAngles[0],ceramic,fabric,dark:darkFabric,ivory:P.ivory});
+  decorativeKeepouts.push(...outdoor.keepouts);
   // Threshold marks are inlaid rather than elevated sign blocks in the lane.
-  for(const angle of plan.entrances){
+  for(const angle of plan.entrances.slice(0,graph.connections[site.id].length)){
     const px=x+Math.cos(angle)*10.5,pz=z+Math.sin(angle)*10.5;
     floorText(b,friends?'FRIENDS':voice?'VOICE':'ARCADE',[px,.07,pz],.14,.07,accent,Math.PI/2-angle);
   }
   return {island:site.id,kind:'soft-social-pavilion',center:[x,0,z],
     wallRadius:radius,wallWidth:.92,height:4.94,canopyClearHeight:4.17,
     centerKeepout:friends?1.36*.67:1.36,decorativeKeepouts,
+    arrival:outdoor.arrival,terrace:outdoor.terrace,
     entrances:plan.entrances.slice(0,graph.connections[site.id].length),
     balconyAngles:options.extraAngles,wallArcs:plan.arcs,seatingArcs:seating.arcs,
     minimumEntryClearance:plan.clearance-.92,minimumSeatingClearance:5.3-1.55};

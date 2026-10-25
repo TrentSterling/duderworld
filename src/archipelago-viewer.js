@@ -1,4 +1,4 @@
-// DuderWorld Archipelago V0.5.0: original math meshes, browser preview,
+// DuderWorld Archipelago V0.5.1: original math meshes, browser preview,
 // GLB export, overhead survey, and optional animated scale-reference duders.
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -39,7 +39,7 @@ const overhead=new THREE.OrthographicCamera(-100,100,100,-100,.1,650);
 overhead.position.set(0,210,.001);
 overhead.up.set(0,0,-1);overhead.lookAt(0,0,0);
 const walkCamera=new THREE.PerspectiveCamera(72,1,.075,300);
-const level=new THREE.Group();level.name='DuderWorld V0.5.0 / bakeable world geometry';
+const level=new THREE.Group();level.name='DuderWorld V0.5.1 / bakeable world geometry';
 const crowdRoot=new THREE.Group();crowdRoot.name='Preview scale-reference duders - NOT EXPORTED';
 scene.add(level,crowdRoot);
 
@@ -174,7 +174,7 @@ document.querySelector('#bake').onclick=async e=>{
   const button=e.currentTarget;button.disabled=true;button.textContent='EXPORTING...';
   try{
     const binary=await new GLTFExporter().parseAsync(exportRoot,{binary:true,onlyVisible:true});
-    saveBlob(binary,'duderworld-archipelago-v0-5-0.glb','model/gltf-binary');
+    saveBlob(binary,'duderworld-archipelago-v0-5-1.glb','model/gltf-binary');
     document.querySelector('#status').textContent='Baked '+(binary.byteLength/1048576).toFixed(2)+
       ' MiB GLB · island groups, normals, colors, bridges and actual recessed bowls.';
   }catch(err){console.error(err);document.querySelector('#status').textContent='Export failed: '+err.message;}
@@ -187,7 +187,7 @@ document.querySelector('#metadata').onclick=()=>{
 };
 document.querySelector('#recipe').onclick=()=>saveBlob(JSON.stringify({
   settings:world.config,metadata:world.metadata,stats:world.stats
-},null,2),'duderworld-archipelago-v0-5-0.recipe.json','application/json');
+},null,2),'duderworld-archipelago-v0-5-1.recipe.json','application/json');
 document.querySelector('#view').onclick=()=>setMode(mode==='overhead'?'orbit':'overhead');
 document.querySelector('#walk').onclick=()=>setMode(mode==='walk'?'orbit':'walk');
 document.querySelector('#outlines').onclick=e=>{

@@ -10,7 +10,7 @@ const recipes=[{},
   {islandCount:7,topology:'chain',detail:20,spread:.9},
   {islandCount:12,topology:'hybrid',detail:20,variation:1}];
 const material=new THREE.MeshBasicMaterial({side:THREE.DoubleSide});
-const reports=[];let rays=0;
+const reports=[];let rays=0,terraceRays=0;
 for(const recipe of recipes){
   const world=buildArchipelago(recipe),report={recipe:world.config,rooms:world.metadata.rooms.length,checks:0};
   for(const room of world.metadata.rooms){
@@ -40,6 +40,20 @@ for(const recipe of recipes){
         }
       }
     }
+    // The new outlook keeps a 2 m-wide route to the parapet. Check actual
+    // standing-height geometry as well as the conservative walk keepouts.
+    if(room.terrace){
+      const angle=room.terrace.angle,dx=Math.cos(angle),dz=Math.sin(angle);
+      for(const lateral of [-1,0,1])for(const y of [1.1,1.85]){
+        const start=new THREE.Vector3(cx+dx*4-dz*lateral,y,cz+dz*4+dx*lateral);
+        const hits=new THREE.Raycaster(start,new THREE.Vector3(dx,0,dz),0,7.5).intersectObject(mesh,false);
+        assert.equal(hits.length,0,`${room.island} terrace standing route blocked: ${world.config.topology}, lane ${lateral}, y ${y}`);
+        for(let d=4;d<=11.5;d+=.25)assert(roomWalkable([room],cx+dx*d-dz*lateral,cz+dz*d+dx*lateral),`${room.island}: terrace walk route blocked`);
+        terraceRays++;
+      }
+      for(const p of room.decorativeKeepouts.filter(p=>p.kind.startsWith('terrace-')||p.kind==='arrival-pier'))
+        assert(!roomWalkable([room],p.x,p.z),'Assembly footprint must block walk preview');
+    }
     for(let i=0;i<chunk.solid.normals.length;i+=3){
       const n=chunk.solid.normals;
       assert(Math.abs(Math.hypot(n[i],n[i+1],n[i+2])-1)<1e-5,'Nonunit normal');
@@ -49,4 +63,4 @@ for(const recipe of recipes){
   reports.push(report);
 }
 material.dispose();
-console.log(JSON.stringify({pass:true,approachRaycasts:rays,clearLaneWidthMeters:3,recipes:reports},null,2));
+console.log(JSON.stringify({pass:true,approachRaycasts:rays,clearLaneWidthMeters:3,terraceRaycasts:terraceRays,terraceLaneWidthMeters:2,recipes:reports},null,2));

@@ -5,7 +5,7 @@ import {buildWorld} from '../src/world.mjs';
 import {buildArchipelago} from '../src/archipelago.mjs';
 import {strict as assert} from 'node:assert';
 
-const html=readFileSync(new URL('../duderworld-v0-5-0.html',import.meta.url),'utf8');
+const html=readFileSync(new URL('../duderworld-v0-5-1.html',import.meta.url),'utf8');
 const glb=readFileSync(new URL('../duderworld-lobby-v0-2.glb',import.meta.url));
 assert.equal((html.match(/<script\b/g)||[]).length,1,'standalone uses one bundled script');
 assert.ok(!/<(?:script|link)\b[^>]*(?:src|href)\s*=/i.test(html),'no dependent scripts/stylesheets');
@@ -33,7 +33,7 @@ const report={pass:true,threeBundleBytes:Buffer.byteLength(html),glbBytes:glb.le
   checks:['Three.js and GLTFExporter bundled with no URL dependency','full MIT notice included in standalone HTML',
     'bundled JavaScript parses','GLB round-tripped through Three.js GLTFLoader','indices/normals/COLOR_0 preserved']};
 console.log(JSON.stringify(report,null,2));
-const latest=readFileSync(new URL('../duderworld-archipelago-v0-5-0.glb',import.meta.url));
+const latest=readFileSync(new URL('../duderworld-archipelago-v0-5-1.glb',import.meta.url));
 const roundtrip=await new GLTFLoader().parseAsync(latest.buffer.slice(latest.byteOffset,latest.byteOffset+latest.byteLength),'');
 let latestTriangles=0,latestVertices=0,latestMeshes=0;
 roundtrip.scene.traverse(o=>{if(!o.isMesh)return;latestMeshes++;latestTriangles+=o.geometry.index.count/3;

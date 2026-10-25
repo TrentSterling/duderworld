@@ -5,7 +5,10 @@ export function roundedBox(b,center,size,r,color,div=5){
  const axes=[[0,1,2],[1,0,2],[2,0,1]];
  // Sample the bend deliberately instead of spending subdivisions on the flat.
  const samples=half=>{
-  const core=half-radius,steps=Math.max(2,Math.min(4,Math.floor(div/2))),a=[];
+  // Tiny trim gets one bevel station (two chords across the full corner).
+  // At a 5 cm radius this bounds the silhouette error to about 3.8 mm.
+  // Upholstery and all broader bends retain their previous samples.
+  const core=half-radius,steps=radius<=.05?1:Math.max(2,Math.min(4,Math.floor(div/2))),a=[];
   for(let i=0;i<=steps;i++)a.push(-core-radius*Math.cos(i/steps*Math.PI/2));
   for(let i=0;i<=steps;i++)a.push(core+radius*Math.sin(i/steps*Math.PI/2));
   return a.filter((v,i)=>i===0||Math.abs(v-a[i-1])>1e-8);

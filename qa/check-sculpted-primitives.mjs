@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {MeshBucket} from '../src/world.mjs';
 import {roundedBox} from '../src/sculpted-primitives.mjs';
-for(const size of [[1.4,.43,1.46],[1.03,.83,.4],[4,.3,8]]){
+for(const size of [[1.4,.43,1.46],[1.03,.83,.4],[4,.3,8],[1.19,.21,.07],[.1,.2,.025]]){
  const b=new MeshBucket('closed box');roundedBox(b,[0,0,0],size,.19,[200,150,170],5);const d=b.output();
  const key=i=>Array.from(d.positions.slice(i*3,i*3+3)).map(v=>Math.round(v*100000)).join(',');
  const edges=new Map(),faces=new Set();
@@ -14,4 +14,4 @@ for(const size of [[1.4,.43,1.46],[1.03,.83,.4],[4,.3,8]]){
  const directions=new Set();for(let i=0;i<d.normals.length;i+=3)for(let axis=0;axis<3;axis++)if(Math.abs(d.normals[i+axis])>.999)directions.add(axis+':'+Math.sign(d.normals[i+axis]));
  assert.equal(directions.size,6,'Missing axial face');
 }
-console.log(JSON.stringify({pass:true,closedRoundedBoxCases:3,checks:['six axial faces','no duplicate faces','two incident triangles at every geometric edge']}));
+console.log(JSON.stringify({pass:true,closedRoundedBoxCases:5,checks:['six axial faces','no duplicate faces','two incident triangles at every geometric edge','reduced tiny trim topology']}));

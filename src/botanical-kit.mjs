@@ -25,7 +25,7 @@ export function curvedStem(b,points,radius,color=BOTANICAL.stem,sides=6){
 
 // A leaf is a swept, cupped lamina. Its silhouette tapers at the base and tip,
 // with asymmetric broad shoulders, a raised midrib and a drooping tip.
-export function leafBlade(b,{root,angle,length,width,rise=.5,droop=.4,curl=.12,color=BOTANICAL.leaf,lobes=0,steps=9,thickness=.014}){
+export function leafBlade(b,{root,angle,length,width,rise=.5,droop=.4,curl=.12,color=BOTANICAL.leaf,lobes=0,steps=9,thickness=.014,widthSteps=2}){
  const forward=[Math.cos(angle),0,Math.sin(angle)],side=[-Math.sin(angle),0,Math.cos(angle)];
  const at=(t,u,lower=false)=>{
   const envelope=t<=0||t>=1?0:Math.pow(Math.sin(Math.PI*t),.74)*(1+.18*Math.sin(Math.PI*t*2));
@@ -39,20 +39,23 @@ export function leafBlade(b,{root,angle,length,width,rise=.5,droop=.4,curl=.12,c
   const grid=[];
   for(let i=0;i<=steps;i++){
    const t=i/steps,row=[];
-   for(let j=0;j<=4;j++){
-    const u=j/2-1,dt=.001,du=.001;
+   // Keep every silhouette station and the central rib. Extra subdivisions
+   // across this shallow cup do not improve the outline, even close up.
+   for(let j=0;j<=widthSteps;j++){
+    const u=j/widthSteps*2-1,dt=.001,du=.001;
     const normalT=Math.max(.002,Math.min(.998,t));
     let n=norm(cross(sub(at(normalT,u+du,lower),at(normalT,u-du,lower)),sub(at(normalT+dt,u,lower),at(normalT-dt,u,lower))));
     if(n[1]<0)n=mul(n,-1);if(lower)n=mul(n,-1);
-    const c=lower?mix(color,BOTANICAL.jade,.3):mix(color,j===2?BOTANICAL.vein:BOTANICAL.jade,j===2?.19:.10);
+    const mid=j===widthSteps/2;
+    const c=lower?mix(color,BOTANICAL.jade,.3):mix(color,mid?BOTANICAL.vein:BOTANICAL.jade,mid?.19:.10);
     row.push(v(at(t,u,lower),n,c));
    }grid.push(row);
   }
-  for(let i=0;i<steps;i++)for(let j=0;j<4;j++)b.quad(grid[i][j],grid[i+1][j],grid[i+1][j+1],grid[i][j+1]);
+  for(let i=0;i<steps;i++)for(let j=0;j<widthSteps;j++)b.quad(grid[i][j],grid[i+1][j],grid[i+1][j+1],grid[i][j+1]);
   rows.push(grid);
  }
  // Thin opaque edge joins. Top/bottom meet at their tapered endpoints.
- for(let i=0;i<steps;i++)for(const j of [0,4]){
+ for(let i=0;i<steps;i++)for(const j of [0,widthSteps]){
   const a=rows[0][i][j],c=rows[0][i+1][j],d=rows[1][i+1][j],e=rows[1][i][j];
   const n=norm(cross(sub(c.p,a.p),sub(d.p,a.p)));
   b.quad({...a,n},{...c,n},{...d,n},{...e,n});
@@ -85,7 +88,7 @@ export function ceramicPlanter(b,x,z,s=1,seed=1,{baseY=0,hero=false,potColor}={}
   curvedStem(b,[start,[start[0],baseY+(.82+level*.45)*s,start[2]],root],.028*s,C.stem);
   leafBlade(b,{root,angle:a,length:(.65+rand()*.30+(hero?.16:0))*s,width:(.42+rand()*.18)*s,
    rise:(.25+level*.2)*s,droop:(.22+(1-level)*.28)*s,curl:.075*s,
-   color:[C.jade,C.leaf,C.young][i%3],lobes:hero&&i%3===0?1:0,steps:hero?10:8});
+   color:[C.jade,C.leaf,C.young][i%3],lobes:hero&&i%3===0?1:0,steps:hero?10:8,widthSteps:hero?4:2});
  }
 }
 

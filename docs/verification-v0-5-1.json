@@ -1,0 +1,224 @@
+{
+  "baseline": "644136e0d193dfd781c4c4aca81ecbe1aad7211e",
+  "baselineHtmlSha256": "ed84ce800318e6d04106717800488c8f8a2e160cce848442c9edd0184701ea68",
+  "candidateHtmlSha256": "7448bf04abdace4c173ed39b9b59bf2caf1517d97b28fa53cd11559e60ff96b2",
+  "staticTriangles": {
+    "baseline": 385348,
+    "candidate": 331072,
+    "saved": 54276,
+    "reductionPercent": 14.084931023386654
+  },
+  "paced": {
+    "world": {
+      "current": {
+        "medianOfRunMediansMs": 2.808816,
+        "runMediansMs": [
+          2.780288,
+          2.837344,
+          2.900224,
+          2.713824
+        ],
+        "rangeMs": [
+          2.713824,
+          2.900224
+        ],
+        "allPassDraws": [
+          38
+        ],
+        "allPassTriangles": [
+          840682
+        ],
+        "invalidQueries": 0,
+        "hardwareAfter": [
+          "2026/10/25 15:32:21.042, NVIDIA GeForce RTX 5070 Ti, 847 MHz, 7001 MHz, 42, 3 %, 36.01 W, P3",
+          "2026/10/25 15:32:38.936, NVIDIA GeForce RTX 5070 Ti, 817 MHz, 7001 MHz, 42, 3 %, 35.97 W, P3",
+          "2026/10/25 15:32:44.972, NVIDIA GeForce RTX 5070 Ti, 1005 MHz, 7001 MHz, 42, 3 %, 36.83 W, P3",
+          "2026/10/25 15:33:02.917, NVIDIA GeForce RTX 5070 Ti, 832 MHz, 7001 MHz, 42, 2 %, 36.04 W, P3"
+        ]
+      },
+      "terrace": {
+        "medianOfRunMediansMs": 3.333488,
+        "runMediansMs": [
+          3.313728,
+          3.353248,
+          3.09008,
+          3.372288
+        ],
+        "rangeMs": [
+          3.09008,
+          3.372288
+        ],
+        "allPassDraws": [
+          38
+        ],
+        "allPassTriangles": [
+          735202
+        ],
+        "invalidQueries": 0,
+        "hardwareAfter": [
+          "2026/10/25 15:32:26.962, NVIDIA GeForce RTX 5070 Ti, 1305 MHz, 810 MHz, 42, 9 %, 33.58 W, P5",
+          "2026/10/25 15:32:32.831, NVIDIA GeForce RTX 5070 Ti, 1080 MHz, 810 MHz, 42, 24 %, 33.84 W, P5",
+          "2026/10/25 15:32:50.871, NVIDIA GeForce RTX 5070 Ti, 1297 MHz, 810 MHz, 42, 9 %, 33.55 W, P5",
+          "2026/10/25 15:32:56.746, NVIDIA GeForce RTX 5070 Ti, 1192 MHz, 810 MHz, 42, 17 %, 33.85 W, P5"
+        ]
+      }
+    },
+    "voice": {
+      "current": {
+        "medianOfRunMediansMs": 3.078368,
+        "runMediansMs": [
+          2.976192,
+          3.064448,
+          3.092288,
+          3.218528
+        ],
+        "rangeMs": [
+          2.976192,
+          3.218528
+        ],
+        "allPassDraws": [
+          26
+        ],
+        "allPassTriangles": [
+          497304
+        ],
+        "invalidQueries": 0,
+        "hardwareAfter": [
+          "2026/10/25 15:33:08.931, NVIDIA GeForce RTX 5070 Ti, 1425 MHz, 810 MHz, 42, 22 %, 33.67 W, P5",
+          "2026/10/25 15:33:26.793, NVIDIA GeForce RTX 5070 Ti, 1357 MHz, 810 MHz, 42, 10 %, 33.75 W, P5",
+          "2026/10/25 15:33:32.796, NVIDIA GeForce RTX 5070 Ti, 1237 MHz, 810 MHz, 42, 9 %, 33.29 W, P5",
+          "2026/10/25 15:33:50.650, NVIDIA GeForce RTX 5070 Ti, 1215 MHz, 810 MHz, 43, 11 %, 33.62 W, P5"
+        ]
+      },
+      "terrace": {
+        "medianOfRunMediansMs": 2.815792,
+        "runMediansMs": [
+          3.057248,
+          2.674368,
+          2.911712,
+          2.719872
+        ],
+        "rangeMs": [
+          2.674368,
+          3.057248
+        ],
+        "allPassDraws": [
+          26
+        ],
+        "allPassTriangles": [
+          475200
+        ],
+        "invalidQueries": 0,
+        "hardwareAfter": [
+          "2026/10/25 15:33:14.851, NVIDIA GeForce RTX 5070 Ti, 1222 MHz, 810 MHz, 43, 32 %, 33.78 W, P5",
+          "2026/10/25 15:33:20.743, NVIDIA GeForce RTX 5070 Ti, 787 MHz, 7001 MHz, 42, 2 %, 35.90 W, P3",
+          "2026/10/25 15:33:38.716, NVIDIA GeForce RTX 5070 Ti, 1950 MHz, 13801 MHz, 43, 2 %, 43.56 W, P1",
+          "2026/10/25 15:33:44.602, NVIDIA GeForce RTX 5070 Ti, 817 MHz, 7001 MHz, 43, 2 %, 36.03 W, P3"
+        ]
+      }
+    },
+    "arrival": {
+      "current": {
+        "medianOfRunMediansMs": 2.71576,
+        "runMediansMs": [
+          2.72368,
+          2.714144,
+          2.717376,
+          2.63168
+        ],
+        "rangeMs": [
+          2.63168,
+          2.72368
+        ],
+        "allPassDraws": [
+          24
+        ],
+        "allPassTriangles": [
+          438800
+        ],
+        "invalidQueries": 0,
+        "hardwareAfter": [
+          "2026/10/25 15:33:56.686, NVIDIA GeForce RTX 5070 Ti, 862 MHz, 7001 MHz, 43, 3 %, 36.48 W, P3",
+          "2026/10/25 15:34:14.527, NVIDIA GeForce RTX 5070 Ti, 787 MHz, 7001 MHz, 43, 2 %, 36.76 W, P3",
+          "2026/10/25 15:34:20.589, NVIDIA GeForce RTX 5070 Ti, 862 MHz, 7001 MHz, 43, 5 %, 37.22 W, P3",
+          "2026/10/25 15:34:38.541, NVIDIA GeForce RTX 5070 Ti, 825 MHz, 7001 MHz, 43, 4 %, 36.51 W, P3"
+        ]
+      },
+      "terrace": {
+        "medianOfRunMediansMs": 2.866944,
+        "runMediansMs": [
+          2.818432,
+          2.791136,
+          2.915456,
+          2.933024
+        ],
+        "rangeMs": [
+          2.791136,
+          2.933024
+        ],
+        "allPassDraws": [
+          24
+        ],
+        "allPassTriangles": [
+          417266
+        ],
+        "invalidQueries": 0,
+        "hardwareAfter": [
+          "2026/10/25 15:34:02.599, NVIDIA GeForce RTX 5070 Ti, 1342 MHz, 810 MHz, 43, 7 %, 34.55 W, P5",
+          "2026/10/25 15:34:08.493, NVIDIA GeForce RTX 5070 Ti, 952 MHz, 7001 MHz, 43, 3 %, 41.69 W, P3",
+          "2026/10/25 15:34:26.488, NVIDIA GeForce RTX 5070 Ti, 1162 MHz, 810 MHz, 43, 7 %, 33.71 W, P5",
+          "2026/10/25 15:34:32.496, NVIDIA GeForce RTX 5070 Ti, 1215 MHz, 810 MHz, 43, 8 %, 33.44 W, P5"
+        ]
+      }
+    }
+  },
+  "sustained": {
+    "baseline": {
+      "median32RenderBlockMs": 3.6252240000000002,
+      "runMedianBlockMs": [
+        3.616912,
+        3.675248,
+        3.6335360000000003,
+        3.6085760000000002
+      ],
+      "rangeBlockMs": [
+        3.6085760000000002,
+        3.675248
+      ],
+      "drawCountsPer32RenderBlock": [
+        1216
+      ],
+      "invalidBlocks": 0,
+      "hardwareAfter": [
+        "2026/10/25 15:35:18.381, NVIDIA GeForce RTX 5070 Ti, 2917 MHz, 13801 MHz, 53, 49 %, 143.92 W, P1",
+        "2026/10/25 15:35:24.758, NVIDIA GeForce RTX 5070 Ti, 2910 MHz, 13801 MHz, 54, 46 %, 159.45 W, P1",
+        "2026/10/25 15:35:26.987, NVIDIA GeForce RTX 5070 Ti, 2910 MHz, 13801 MHz, 55, 50 %, 130.18 W, P1",
+        "2026/10/25 15:35:33.322, NVIDIA GeForce RTX 5070 Ti, 2902 MHz, 13801 MHz, 55, 44 %, 156.15 W, P1"
+      ]
+    },
+    "candidate": {
+      "median32RenderBlockMs": 3.4810160000000003,
+      "runMedianBlockMs": [
+        3.477984,
+        3.484048,
+        3.4385440000000003,
+        3.50528
+      ],
+      "rangeBlockMs": [
+        3.4385440000000003,
+        3.50528
+      ],
+      "drawCountsPer32RenderBlock": [
+        1216
+      ],
+      "invalidBlocks": 0,
+      "hardwareAfter": [
+        "2026/10/25 15:35:20.466, NVIDIA GeForce RTX 5070 Ti, 2910 MHz, 13801 MHz, 54, 47 %, 134.74 W, P1",
+        "2026/10/25 15:35:22.539, NVIDIA GeForce RTX 5070 Ti, 2910 MHz, 13801 MHz, 55, 56 %, 130.89 W, P1",
+        "2026/10/25 15:35:29.039, NVIDIA GeForce RTX 5070 Ti, 2902 MHz, 13801 MHz, 55, 50 %, 126.37 W, P1",
+        "2026/10/25 15:35:31.080, NVIDIA GeForce RTX 5070 Ti, 2910 MHz, 13801 MHz, 57, 54 %, 163.26 W, P1"
+      ]
+    }
+  },
+  "limitations": "Paced results contain variant-correlated GPU power states; no reliable interactive speedup claim. Sustained test amortizes repeated static renders and gl.finish; it is separate throughput evidence, not interactive frame time or FPS. No driver/clock/OS settings changed. No Quest/Unity/stereo/thermal/EOS qualification. Sustained diagnostic has no per-block CPU wall time; GPU completion/query-polling overhead is outside the query interval. Clock observations are before/after snapshots, not continuous telemetry or locked clocks."
+}

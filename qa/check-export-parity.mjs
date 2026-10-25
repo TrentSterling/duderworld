@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import assert from 'node:assert/strict';
 async function meshes(path){const bytes=readFileSync(path),asset=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');const map=new Map();asset.scene.traverse(o=>{if(o.isMesh)map.set(o.name,o.geometry);});return map;}
-const a=await meshes('duderworld-archipelago-v0-5-0.glb'),b=await meshes('evidence/art/browser-duderworld-archipelago-v0-5-0.glb');
+const a=await meshes('duderworld-archipelago-v0-5-1.glb'),b=await meshes('evidence/terrace/browser-duderworld-archipelago-v0-5-1.glb');
 const maximum={position:0,normal:0,color:0},worst={};assert.equal(a.size,b.size);
 for(const [name,ga] of a){const gb=b.get(name);assert(gb,name);assert.equal(ga.index.count,gb.index.count);
  for(const attribute of Object.keys(maximum)){

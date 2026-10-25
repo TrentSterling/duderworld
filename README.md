@@ -1,3 +1,20 @@
+# Current local candidate: 0.5.1
+
+Open `duderworld-v0-5-1.html` directly offline. This bounded pass adds composed
+arrivals and sea terraces to the existing Voice/Friends rooms while reducing
+static geometry from 385,348 to 331,072 triangles. It retains 18 static batches,
+the NPR materials, controls and deterministic exports.
+
+Build: `npm run build:archipelago`; export: `npm run bake:archipelago`;
+verify: `npm test`. Current GLB: `duderworld-archipelago-v0-5-1.glb`.
+Read [verification and measured tradeoffs](docs/verification-v0-5-1.md), including
+the slower paced world timing and GPU power-state limitations.
+
+![Arrivals and terraces](docs/media/duderworld-0.5.1-arrivals.png)
+
+
+---
+
 # DuderWorld 0.5.0: NPR garden lounges
 
 Open **[duderworld-v0-5-0.html](duderworld-v0-5-0.html)** offline. This art candidate adds original curved leaf blades, stems, rosette plants, turned ceramic pots, individual sofa cushions, tilted pillows, acoustic panels and social-room reliefs. Warm ceramic, rose upholstery and sea-glass green sit under a single-pass NPR shader with colored light bands and restrained opaque highlights. The connected world, skate park, controls and exports remain.

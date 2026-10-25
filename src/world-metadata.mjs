@@ -12,7 +12,7 @@ export function createWorldMetadata(world){
       size:[len+.8,.45,e.width],yawRadians:Math.atan2(-dz,dx)});
     navLinks.push({id:e.id,from:[e.fromX,.1,e.fromZ],to:[e.toX,.1,e.toZ],width:e.width,bidirectional:true});
   }
-  return {format:'tront-eos.world-metadata',version:4,sourceBuild:'0.5.0',
+  return {format:'tront-eos.world-metadata',version:4,sourceBuild:'0.5.1',
     coordinateSystem:{units:'meters',up:'Y',deckHeight:0},recipe:world.config,
     islands:sites.map(s=>({...s,r:s.radius})),bridges:world.metadata.bridges.map(e=>{
       const a=sites.find(s=>s.id===e.from),b=sites.find(s=>s.id===e.to);
