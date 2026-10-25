@@ -199,8 +199,8 @@ function portal(b,glow,x,z,side,opening,thickness,detail,frameColor,glowColor){
 // Swept annular wall/seat/podium: smooth on the curved faces, flat on its
 // horizontal surfaces. These bands also make thick, genuinely three-dimensional
 // backrests instead of extra coplanar strips glued to the cushion surfaces.
-function arcBand(b,x,z,r0,r1,y0,y1,a0,a1,color,segments=20){
-  const n=Math.max(5,Math.round(segments*(a1-a0)/Math.PI));
+function arcBand(b,x,z,r0,r1,y0,y1,a0,a1,color,segments=20,minSegments=5){
+  const n=Math.max(minSegments,Math.round(segments*(a1-a0)/Math.PI));
   const make=(r,y,a,norm)=>v([x+Math.cos(a)*r,y,z+Math.sin(a)*r],norm,color);
   for(let i=0;i<n;i++){
     const a=a0+(a1-a0)*i/n,c=a0+(a1-a0)*(i+1)/n;

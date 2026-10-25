@@ -1,36 +1,44 @@
-// DuderWorld Archipelago V0.3: original math meshes, browser preview,
+// DuderWorld Archipelago V0.4.1: original math meshes, browser preview,
 // GLB export, overhead survey, and optional animated scale-reference duders.
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
 import {buildArchipelago,DEFAULT_ARCHIPELAGO} from './archipelago.mjs';
+import {roomWalkable} from './soft-architecture.mjs';
+import {createWorldMetadata} from './world-metadata.mjs';
+const TAU=Math.PI*2;
 
 const canvas=document.querySelector('#screen');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.22;
+renderer.toneMappingExposure=1.08;
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0xa8ddeb);
 scene.fog=new THREE.Fog(0xa8ddeb,170,330);
-scene.add(new THREE.HemisphereLight(0xffffff,0x6b9eaf,2.05));
-const sun=new THREE.DirectionalLight(0xfff3e1,2.45);
+scene.add(new THREE.HemisphereLight(0xffffff,0x6b9eaf,1.65));
+const sun=new THREE.DirectionalLight(0xfff3e1,2.25);
 sun.position.set(-41,92,57);sun.castShadow=true;
 sun.shadow.mapSize.set(2048,2048);
 sun.shadow.camera.left=-84;sun.shadow.camera.right=84;
 sun.shadow.camera.top=84;sun.shadow.camera.bottom=-84;
 sun.shadow.camera.far=230;sun.shadow.bias=-.00022;sun.shadow.normalBias=.035;
 sun.shadow.radius=3;scene.add(sun,sun.target);
+const sunOffset=new THREE.Vector3(-41,92,57),shadowDirection=sunOffset.clone().normalize();
+const shadowRight=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),shadowDirection).normalize();
+const shadowUp=new THREE.Vector3().crossVectors(shadowDirection,shadowRight).normalize();
+const shadowFocus=new THREE.Vector3(),shadowCenter=new THREE.Vector3();
+let shadowReach=84;
 const perspective=new THREE.PerspectiveCamera(49,1,.10,650);
-perspective.position.set(109,125,134);
+perspective.position.set(94,104,116);
 const overhead=new THREE.OrthographicCamera(-100,100,100,-100,.1,650);
 overhead.position.set(0,210,.001);
 overhead.up.set(0,0,-1);overhead.lookAt(0,0,0);
 const walkCamera=new THREE.PerspectiveCamera(72,1,.075,300);
-const level=new THREE.Group();level.name='DuderWorld V0.3 / bakeable world geometry';
+const level=new THREE.Group();level.name='DuderWorld V0.4.1 / bakeable world geometry';
 const crowdRoot=new THREE.Group();crowdRoot.name='Preview scale-reference duders - NOT EXPORTED';
 scene.add(level,crowdRoot);
 
@@ -42,7 +50,7 @@ const outlineMat=new THREE.MeshBasicMaterial({color:0x3f5463,side:THREE.BackSide
 const settings={...DEFAULT_ARCHIPELAGO};
 let world=null,camera=perspective,controls=null,mode='orbit',
   outlines=false,avatars=true,exportRoot=new THREE.Group();
-const animations={updating:false,people:[],meshes:[],baseTime:0};
+const animations={updating:false,people:[],meshes:[],parts:[],baseTime:0};
 const keys=new Set(),player={position:new THREE.Vector3(0,1.90,16),yaw:Math.PI,pitch:-.04};
 
 function makeGeometry(data){
@@ -146,7 +154,7 @@ function setMode(next){
     walkCamera.position.copy(player.position);
   }else{
     camera=perspective;
-    perspective.position.set(109,125,134);
+    perspective.position.set(94,104,116);
   }
   attachControls();
   document.querySelector('#view').textContent=next==='overhead'?'ORBIT 3D':'TOP DOWN';
@@ -164,7 +172,7 @@ document.querySelector('#bake').onclick=async e=>{
   const button=e.currentTarget;button.disabled=true;button.textContent='EXPORTING...';
   try{
     const binary=await new GLTFExporter().parseAsync(exportRoot,{binary:true,onlyVisible:true});
-    saveBlob(binary,'duderworld-archipelago-v0-3.glb','model/gltf-binary');
+    saveBlob(binary,'duderworld-archipelago-v0-4-1.glb','model/gltf-binary');
     document.querySelector('#status').textContent='Baked '+(binary.byteLength/1048576).toFixed(2)+
       ' MiB GLB · island groups, normals, colors, bridges and actual recessed bowls.';
   }catch(err){console.error(err);document.querySelector('#status').textContent='Export failed: '+err.message;}
@@ -172,31 +180,12 @@ document.querySelector('#bake').onclick=async e=>{
 };
 // TrontEOS consumes semantic metadata separately from static render geometry.
 document.querySelector('#metadata').onclick=()=>{
-  const sites=world.metadata.islands;
-  const collisionShapes=sites.map(s=>({id:'collision-'+s.id,
-    island:s.id,kind:'cylinder',position:[s.x,-.25,s.z],
-    radius:s.radius*.96,height:.5}));
-  const navLinks=[];
-  for(const e of world.metadata.bridges){
-    const dx=e.toX-e.fromX,dz=e.toZ-e.fromZ,len=Math.hypot(dx,dz);
-    collisionShapes.push({id:'collision-'+e.id,kind:'box',
-      position:[(e.fromX+e.toX)/2,-.12,(e.fromZ+e.toZ)/2],
-      size:[len+.8,.45,e.width],yawRadians:Math.atan2(-dz,dx)});
-    navLinks.push({id:e.id,from:[e.fromX,.1,e.fromZ],
-      to:[e.toX,.1,e.toZ],width:e.width,bidirectional:true});
-  }
-  const data={format:'tront-eos.world-metadata',version:4,
-    coordinateSystem:{units:'meters',up:'Y',deckHeight:0},
-    recipe:world.config,islands:sites,bridges:world.metadata.bridges,
-    adjacency:world.metadata.adjacency,
-    spawnPoints:world.metadata.spawnPoints,
-    interactables:world.metadata.interactables,
-    collisionShapes,navLinks};
+  const data=createWorldMetadata(world);
   saveBlob(JSON.stringify(data,null,2),'duderworld-v0-4.world.json','application/json');
 };
 document.querySelector('#recipe').onclick=()=>saveBlob(JSON.stringify({
   settings:world.config,metadata:world.metadata,stats:world.stats
-},null,2),'duderworld-archipelago-v0-3.recipe.json','application/json');
+},null,2),'duderworld-archipelago-v0-4-1.recipe.json','application/json');
 document.querySelector('#view').onclick=()=>setMode(mode==='overhead'?'orbit':'overhead');
 document.querySelector('#walk').onclick=()=>setMode(mode==='walk'?'orbit':'walk');
 document.querySelector('#outlines').onclick=e=>{
@@ -213,6 +202,20 @@ document.querySelector('#reroll').onclick=()=>{
 document.querySelector('#reset').onclick=()=>{
   Object.assign(settings,DEFAULT_ARCHIPELAGO);setMode('orbit');rebuild();
 };
+function focusSite(id){
+  const site=world.metadata.islands.find(s=>s.id===id||s.theme===id);
+  if(!site){setMode('orbit');return;}
+  setMode('orbit');
+  const room=world.metadata.rooms?.find(r=>r.island===site.id);
+  const angle=(room?.entrances[0]??Math.atan2(-site.z,-site.x))-.30;
+  const distance=id==='skate'?47:29;
+  camera.position.set(site.x+Math.cos(angle)*distance,id==='skate'?30:18,site.z+Math.sin(angle)*distance);
+  controls.target.set(site.x,1.5,site.z);controls.update();
+}
+document.querySelector('#focusVoice').onclick=()=>focusSite('voice');
+document.querySelector('#focusFriends').onclick=()=>focusSite('friends');
+document.querySelector('#focusSkate').onclick=()=>focusSite('skate');
+document.querySelector('#focusWorld').onclick=()=>setMode('orbit');
 document.querySelector('#topology').addEventListener('change',e=>{
   settings.topology=e.currentTarget.value;rebuild();
 });
@@ -243,6 +246,7 @@ document.addEventListener('mousemove',e=>{
   player.pitch=Math.max(-1.42,Math.min(1.42,player.pitch-e.movementY*.0021));
 });
 function walkable(x,z){
+  if(!roomWalkable(world.metadata.rooms||[],x,z))return false;
   if(world.metadata.islands.some(s=>Math.hypot(x-s.x,z-s.z)<s.radius*.96))return true;
   return world.metadata.bridges.some(b=>{
     const dx=b.toX-b.fromX,dz=b.toZ-b.fromZ;
@@ -293,9 +297,10 @@ function buildCrowd(){
   n=world.config.seed|0;
   for(const site of world.metadata.islands){
     const count=site.id==='skate'?18:7;
+    const room=world.metadata.rooms?.some(r=>r.island===site.id);
     for(let k=0;k<count;k++){
       const angle=(k/count)*Math.PI*2+rnd()*.3;
-      const radius=site.id==='skate'?13.8+rnd()*4.2:3.4+rnd()*4.7;
+      const radius=site.id==='skate'?13.8+rnd()*4.2:room?4.0+rnd()*.8:3.4+rnd()*4.7;
       const x=site.x+Math.cos(angle)*radius,z=site.z+Math.sin(angle)*radius;
       animations.people.push({
         island:site.id,k,site,x,z,radius,angle,phase:rnd()*TAU,
@@ -318,17 +323,25 @@ function buildCrowd(){
     {name:'hat',geometry:new THREE.CylinderGeometry(.38,.51,.23,12),material:new THREE.MeshStandardMaterial({roughness:.72})},
     {name:'board',geometry:new THREE.BoxGeometry(1.28,.12,.39),material:new THREE.MeshStandardMaterial({roughness:.79})}
   ];
-  for(const s of spec){
-    const mesh=new THREE.InstancedMesh(s.geometry,s.material,count);
+  animations.parts=[];
+  for(let index=0;index<spec.length;index++){
+    const s=spec[index],previousPair={2:1,4:3,6:5}[index];
+    if(previousPair!==undefined){
+      s.geometry.dispose();s.material.dispose();
+      animations.parts.push({mesh:animations.parts[previousPair].mesh,offset:count});continue;
+    }
+    const paired=[1,3,5].includes(index);
+    const mesh=new THREE.InstancedMesh(s.geometry,s.material,count*(paired?2:1));
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);mesh.frustumCulled=false;
     mesh.name='Preview '+s.name;mesh.castShadow=s.name!=='eyeL'&&s.name!=='eyeR';
     mesh.receiveShadow=false;
-    crowdRoot.add(mesh);animations.meshes.push(mesh);
+    crowdRoot.add(mesh);animations.meshes.push(mesh);animations.parts.push({mesh,offset:0});
   }
   for(let i=0;i<count;i++){
     const color=new THREE.Color(animations.people[i].color);
-    for(const m of animations.meshes)if(['bean','armL','armR','footL','footR','hat','board']
-      .some(n=>m.name==='Preview '+n))m.setColorAt(i,color);
+    for(const m of animations.meshes)if(m.name!=='Preview eyeL'){
+      m.setColorAt(i,color);if(m.count===count*2)m.setColorAt(i+count,color);
+    }
   }
 }
 const rootPosition=new THREE.Vector3(),localPosition=new THREE.Vector3(),tmpPosition=new THREE.Vector3();
@@ -374,7 +387,7 @@ function animateCrowd(seconds){
       tmpScale.set(...scale);
       temp.position.copy(tmpPosition);temp.quaternion.copy(tmpQuat);
       temp.scale.copy(tmpScale);temp.updateMatrix();
-      meshes[index].setMatrixAt(i,temp.matrix);
+      const part=animations.parts[index];part.mesh.setMatrixAt(i+part.offset,temp.matrix);
     };
     set(0,[0,.08,0],[0,0,0],[1,1.18,.78]);
     const wave=dude.behavior==='wave'||(dude.behavior==='idle'&&dude.k%4===0);
@@ -417,6 +430,24 @@ function resize(){
   overhead.left=-reach*width/height;overhead.right=reach*width/height;
   overhead.top=reach;overhead.bottom=-reach;overhead.updateProjectionMatrix();
 }
+function frameShadows(){
+  // Spend the fixed shadow texture on the inspected space, instead of mapping
+  // all seven islands into it during an interior view. Snap in light space to
+  // keep stationary surfaces stable while orbiting/panning.
+  shadowFocus.copy(mode==='walk'?player.position:controls.target);shadowFocus.y=0;
+  const worldReach=Math.max(84,...world.metadata.islands.map(s=>Math.hypot(s.x,s.z)+s.radius+8));
+  const desired=mode==='walk'?26:Math.ceil(camera.position.distanceTo(shadowFocus)*.7/2)*2;
+  const reach=mode==='overhead'?worldReach:Math.max(24,Math.min(worldReach,desired));
+  if(reach!==shadowReach){
+    shadowReach=reach;Object.assign(sun.shadow.camera,{left:-reach,right:reach,top:reach,bottom:-reach});
+    sun.shadow.camera.updateProjectionMatrix();
+  }
+  const texel=2*reach/sun.shadow.mapSize.x;
+  shadowCenter.copy(shadowRight).multiplyScalar(Math.round(shadowFocus.dot(shadowRight)/texel)*texel)
+    .addScaledVector(shadowUp,Math.round(shadowFocus.dot(shadowUp)/texel)*texel)
+    .addScaledVector(shadowDirection,shadowFocus.dot(shadowDirection));
+  sun.target.position.copy(shadowCenter);sun.position.copy(shadowCenter).add(sunOffset);
+}
 window.addEventListener('resize',resize);
 let prev=performance.now();
 function frame(now){
@@ -424,9 +455,19 @@ function frame(now){
   const dt=Math.min((now-prev)/1000,.08);prev=now;
   if(mode==='walk')walk(dt);
   else controls?.update();
-  animateCrowd(now*.001);
+  animateCrowd(animations.captureTime??now*.001);
+  frameShadows();
   renderer.render(scene,camera);
 }
 setMode('orbit');resize();rebuild();
-window.__duderworld={world:()=>world,scene,level,renderer,exportRoot:()=>exportRoot};
+// Deterministic inspection API: no input injection or pointer lock is needed.
+window.__duderworld={world:()=>world,scene,level,renderer,exportRoot:()=>exportRoot,
+  view(position,target){setMode('orbit');camera.position.set(...position);
+    controls.target.set(...target);controls.update();},
+  configure(recipe){Object.assign(settings,recipe);rebuild();},
+  crowd(visible){avatars=visible;crowdRoot.visible=visible;},
+  setMode,walkable,focusSite,metadata:()=>createWorldMetadata(world),
+  time(seconds){animations.captureTime=seconds;},
+  async exportGLB(){return new GLTFExporter().parseAsync(exportRoot,{binary:true,onlyVisible:true});}
+};
 requestAnimationFrame(frame);

@@ -3,3 +3,5 @@ output/
 *.zip
 *.log
 .DS_Store
+evidence/
+Duderworld-review.html

@@ -14,7 +14,7 @@ const template=readFileSync(join(root,'src/archipelago-template.html'),'utf8');
 const license=readFileSync(join(root,'node_modules/three/LICENSE'),'utf8');
 const html=template.replace('/* INLINE_GENERATED_CODE */',()=>script)
   .replace('<!doctype html>','<!doctype html>\n<!--\n'+license+'\n-->');
-const path=join(root,'duderworld-v0-3.html');
+const path=join(root,'duderworld-v0-4-1.html');
 writeFileSync(path,html,'utf8');
 console.log('Created',path,'bytes',Buffer.byteLength(html),'sha256',
   createHash('sha256').update(html).digest('hex'));

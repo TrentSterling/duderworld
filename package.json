@@ -1,18 +1,20 @@
 {
   "name": "duderworld",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "description": "Procedural level geometry for Tront-EOS sample scenes",
   "scripts": {
-    "build": "node build.mjs",
+    "build": "node build-v0-4.mjs && node build-archipelago.mjs",
     "build:archipelago": "node build-archipelago.mjs",
     "bake": "node qa/bake-glb.mjs",
     "bake:archipelago": "node qa/bake-archipelago.mjs",
-    "test": "node qa/check-geometry.mjs && node qa/check-build.mjs && node qa/check-archipelago.mjs && node qa/check-layout-graph-v0-4.mjs",
+    "test": "node qa/check-geometry.mjs && node qa/check-build.mjs && node qa/check-archipelago.mjs && node qa/check-layout-graph-v0-4.mjs && node qa/check-soft-rooms.mjs",
     "test:archipelago": "node qa/check-archipelago.mjs",
     "build:studio": "node build-v0-4.mjs",
     "test:layout": "node qa/check-layout-graph-v0-4.mjs",
-    "export:worldmeta": "node qa/export-world-metadata-v0-4.mjs"
+    "export:worldmeta": "node qa/export-world-metadata-v0-4.mjs",
+    "test:rooms": "node qa/check-soft-rooms.mjs",
+    "build:lobby": "node build.mjs"
   },
   "dependencies": {
     "esbuild": "0.25.12",

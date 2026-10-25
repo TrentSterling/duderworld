@@ -4,7 +4,8 @@
 // Units are meters. Y=0 is island walking surface, ocean ~= -3.6.
 import {Vector2,ShapeUtils} from 'three';
 import {generateLayoutGraph} from './layout-graph.mjs';
-import {MeshBucket,roundedBox,lathe,ellipsoid,arcBand,annulus,planter,
+import {roundedArc,roomArcs,sweepArch} from './soft-architecture.mjs';
+import {MeshBucket,roundedBox,lathe,ellipsoid,arcBand as legacyArcBand,annulus,planter,
   trough,fountain,makeRandom} from './world.mjs';
 
 export const DEFAULT_ARCHIPELAGO=Object.freeze({
@@ -26,6 +27,10 @@ export const PALETTE={
   foam:[189,241,226],glow:[255,241,171],black:[34,55,79],
 };
 const P=PALETTE,TAU=Math.PI*2;
+// Small boundary spans already subdivide the curve. Do not subdivide each
+// five times again; keep V0.2's default untouched for its existing bake.
+const arcBand=(b,x,z,r0,r1,y0,y1,a0,a1,color,segments=20)=>
+  legacyArcBand(b,x,z,r0,r1,y0,y1,a0,a1,color,segments,1);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
 const norm=p=>{let n=Math.hypot(...p)||1;return p.map(x=>x/n);};
@@ -423,17 +428,7 @@ function floorText(b,word,center,u=.16,y=.07,col=P.white,yaw=0){
 function archGate(b,glow,x,z,width,height,yaw,color,shine){
   const cs=Math.cos(yaw),sn=Math.sin(yaw);
   const point=(a,y,d=0)=>[x+a*cs+d*sn,y,z-a*sn+d*cs];
-  const n=24,points=[[-width*.5,.2],[-width*.5,height-width*.5]];
-  for(let i=0;i<=n;i++){
-    const a=Math.PI-i*Math.PI/n;
-    points.push([width*.5*Math.cos(a),height-width*.5+width*.5*Math.sin(a)]);
-  }
-  points.push([width*.5,.2]);
-  for(const [r,c] of [[.41,color],[.20,P.gold]]){
-    for(let j=0;j<points.length-1;j++){
-      tube(b,point(...points[j]),point(...points[j+1]),r,c,10);
-    }
-  }
+  sweepArch(b,glow,{x,z,width,height,yaw,color,accent:shine});
   // A true doorway (no opaque planar blockage) with a bright threshold rim.
   const xA=point(-width*.5,.075,-.1),xB=point(width*.5,.075,-.1);
   tube(glow,xA,xB,.10,shine,8);
@@ -598,6 +593,69 @@ function voiceLounge(b,glow,site){
   tube(b,[x,.35,z],[x,.9,z],.09,P.ink,8);
   billboard(b,x,z-9.8,'VOICE',P.violet);
 }
+// Open-air social pavilions: a broad oculus, thick rolled wall crowns and
+// capsule-ended upholstery. Every approach follows the current layout graph.
+// The rooms remain in their island's two existing material batches.
+function socialPavilion(b,glow,site,sites,graph,detail){
+  const {x,z}=site,voice=site.theme==='voice',friends=site.theme==='friends';
+  const accent=voice?P.violet:friends?P.teal:P.coral;
+  const upholstery=voice?P.lilac:friends?P.mint:P.peach;
+  const away=Math.atan2(z,x),radius=9.55;
+  const options={radius,halfClearance:4.4,extraAngles:[away+.85]};
+  const plan=roomArcs(site,sites,graph,options);
+  for(const [a0,a1] of plan.arcs){
+    const shell=(from,to,lo,hi)=>roundedArc(b,{x,z,r:radius,width:.92,y0:lo,y1:hi,
+      a0:from,a1:to,bevel:.22,color:P.ivory,detail});
+    // Broad, genuinely open sea windows. Their sill and lintel are solids,
+    // while the aperture contains no glass plane or emissive substitute.
+    const mid=(a0+a1)/2,windowHalf=.16;
+    if(a1-a0>1.1){
+      shell(a0,mid-windowHalf,.04,4.55);shell(mid+windowHalf,a1,.04,4.55);
+      // The narrower sill embeds into the round jambs without coincident
+      // surface sheets. The continuous canopy itself is the window lintel.
+      roundedArc(b,{x,z,r:radius,width:.64,y0:.10,y1:1.04,
+        a0:mid-windowHalf,a1:mid+windowHalf,bevel:.20,color:P.ivory,detail});
+    }else shell(a0,a1,.04,4.55);
+    if(a1-a0>.32){
+      const pads=a1-a0>1.1?[[a0+.09,mid-.23],[mid+.23,a1-.09]]:[[a0+.09,a1-.09]];
+      for(const [lo,hi] of pads)if(hi-lo>.12)roundedArc(b,{x,z,r:radius-.59,width:.12,y0:1.15,y1:3.17,
+        a0:lo,a1:hi,bevel:.055,color:upholstery,detail});
+      for(const [lo,hi] of pads)if(hi-lo>.12)roundedArc(glow,{x,z,r:radius-.56,width:.075,y0:3.54,y1:3.60,
+        a0:lo,a1:hi,bevel:.025,color:P.glow,detail});
+    }
+    // C-shaped canopy wings leave the arrival open to the sky. A narrow
+    // coloured crown keeps the room's identity without a giant colour disk.
+    roundedArc(b,{x,z,r:9.38,width:2.20,y0:4.17,y1:4.84,a0,a1,bevel:.29,color:P.ivory,detail});
+    roundedArc(b,{x,z,r:10.1,width:.35,y0:4.69,y1:4.94,a0,a1,bevel:.12,color:accent,detail});
+  }
+  const seating=roomArcs(site,sites,graph,{radius:6.8,halfClearance:2.65,extraAngles:options.extraAngles});
+  seating.arcs=seating.arcs.filter(([a0,a1])=>a1-a0>=.35);
+  for(const [a0,a1] of seating.arcs){
+    roundedArc(b,{x,z,r:6.75,width:1.55,y0:.12,y1:.68,a0,a1,bevel:.24,color:upholstery,detail});
+    roundedArc(b,{x,z,r:7.31,width:.46,y0:.49,y1:1.48,a0,a1,bevel:.21,color:accent,detail});
+    roundedArc(b,{x,z,r:6.75,width:1.25,y0:.65,y1:.79,a0:a0+.025,a1:a1-.025,bevel:.06,color:P.white,detail});
+  }
+  // Flat inlay preserves the deck and a wide central gathering area.
+  disk(b,x,z,4.45,.055,voice?P.paleBlue:P.warm,Math.max(48,detail*2));
+  annulus(b,x,z,4.45,4.57,.057,accent,Math.max(48,detail*2));
+  if(friends)fountain(b,x,z,.68);
+  else{
+    lathe(b,x,z,[[.62,.06,P.ivory],[.62,.59,P.ivory],[1.25,.62,P.ivory],
+      [1.36,.75,P.white],[1.25,.88,P.white]],32);
+    ellipsoid(b,[x,1.14,z],[.24,.32,.24],accent,12,8);
+  }
+  // Threshold marks are inlaid rather than elevated sign blocks in the lane.
+  for(const angle of plan.entrances){
+    const px=x+Math.cos(angle)*10.5,pz=z+Math.sin(angle)*10.5;
+    floorText(b,friends?'FRIENDS':voice?'VOICE':'ARCADE',[px,.07,pz],.14,.07,accent,Math.PI/2-angle);
+  }
+  return {island:site.id,kind:'soft-social-pavilion',center:[x,0,z],
+    wallRadius:radius,wallWidth:.92,height:4.94,canopyClearHeight:4.17,
+    centerKeepout:friends?1.34*.68:1.36,
+    entrances:plan.entrances.slice(0,graph.connections[site.id].length),
+    balconyAngles:options.extraAngles,wallArcs:plan.arcs,seatingArcs:seating.arcs,
+    minimumEntryClearance:plan.clearance-.92,minimumSeatingClearance:5.3-1.55};
+}
 function sessionGates(b,glow,site){
   const {x,z}=site;
   for(let i=-1;i<=1;i++){
@@ -751,7 +809,7 @@ export function buildArchipelago(recipe={}){
   const graph=generateLayoutGraph(config);
   const sites=worldSites(config,graph),chunks=[],metadata={
     units:'meters',islands:[],bridges:[],
-    version:4,recipe:graph.config,adjacency:graph.connections,
+    version:4,recipe:graph.config,adjacency:graph.connections,rooms:[],
     spawnPoints:graph.spawnPoints,interactables:graph.interactables
   };
   for(const site of sites){
@@ -765,13 +823,13 @@ export function buildArchipelago(recipe={}){
     b.part('arcaded boundary, landscaping and site landing',()=>{
       rim(b,glow,site,config.detail,rand,sites,graph);
       shoreline(b,site,rand);
-      activityBackdrop(b,glow,site);
+      if(!['friends','voice'].includes(site.theme))activityBackdrop(b,glow,site);
     });
     b.part(site.name+' original procedural activity architecture',()=>{
       switch(site.theme){
         case 'skate':skatePark(b,glow,site,config.detail);break;
-        case 'friends':friendsPlaza(b,glow,site);break;
-        case 'voice':voiceLounge(b,glow,site);break;
+        case 'friends':case 'voice':
+          metadata.rooms.push(socialPavilion(b,glow,site,sites,graph,config.detail));break;
         case 'sessions':sessionGates(b,glow,site);break;
         case 'physics':physicsYard(b,glow,site);break;
         case 'arcade':arcadeRoom(b,glow,site);break;

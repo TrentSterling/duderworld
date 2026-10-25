@@ -1,3 +1,39 @@
+# DuderWorld 0.4.1: rounded social rooms
+
+Open **[duderworld-v0-4-1.html](duderworld-v0-4-1.html)** directly in a desktop browser. It is a self-contained offline Three.js authoring preview. The voice lounge and friends courtyard now have continuous rounded wall shells, canopy wings, real sea-facing apertures and capsule-ended seating. The original connected skate park, activity islands, layout recipes and Duder Lab / Unity / TrontEOS separation remain intact.
+
+This local candidate is based on verified GitHub main `f204f2ac5021c02089f0dd96022fb3e6efef8674`, package **0.4.0**. The historical V0.3 HTML and GLBs remain unchanged. No publication or deployment is part of this pass.
+
+![Matched before and after social rooms](docs/media/duderworld-v0-4-1-comparison.png)
+
+Repeated desktop measurements and limitations: [verification notes](docs/verification-v0-4-1.md), [full metric JSON](docs/verification-v0-4-1.json).
+
+- Default static scene: **288,460 triangles / 192,274 indexed vertices / 18 material batches**, compared with 305,750 / 227,625 / 18 at the source baseline. Low detail: 211,112 triangles.
+- Continuous swept architecture and arches avoid caps between every short tube segment. Curved boundary spans no longer get redundant fivefold subdivision.
+- Preview crowd: six instanced batches instead of nine, with unchanged body-part geometry. The crowd remains a viewport scale reference, excluded from exported GLBs.
+- Focus buttons visit the two rooms and the skate park. Existing orbit, top-down, walk, recipe, outline, reroll and export controls remain available.
+- Fixed the upstream detailed viewer's missing `TAU` constant, which prevented its rebuilt source from reaching the first rendered frame.
+- Browser and CLI use one metadata builder. Version-4 fields remain, with additive room descriptors and navigation keepouts. Whole-island collision cylinders are coarse proxies, not completed Unity colliders.
+- Shadow framing follows the inspected region at the same 2048 texture resolution and snaps to shadow texels in light space. No new post-processing or texture assets.
+
+## Build and checks
+
+```sh
+npm ci
+npm run build             # V0.4 layout studio + V0.4.1 detailed viewer
+npm test
+npm run bake:archipelago  # duderworld-archipelago-v0-4-1.glb
+npm run export:worldmeta  # version-4 JSON with room descriptors
+```
+
+`npm run build:lobby` now writes the historical V0.2 viewer to `duderworld-v0-2.html`; it no longer overwrites `static.html`. The V0.4 simplified layout studio is still `static.html`.
+
+`qa/check-soft-rooms.mjs` casts standing-height rays through the actual generated room meshes across radial, ring, chain and hybrid layouts. It verifies a 3 m-wide arrival lane, unit normals and navigation/geometry consistency. `qa/check-browser.py` verifies actual UI downloads and three rebuild cycles in a muted headless browser without mouse/keyboard injection, focus or pointer lock. `qa/inspect-offscreen.py` captures matched views and GPU query timings. The Python scripts accept no desktop input and currently name the installed Chromium path; adjust that path on another machine.
+
+See `evidence/` for before/after captures, repeated renderer measurements and the verification report. Desktop measurements are from RTX 5070 Ti / ANGLE D3D11 at 1600 x 1000. They are **not Quest, Unity, stereo VR, thermal, EOS or multiplayer qualification**. Ramps and other older props still need production Unity collision/navigation treatment; the new room keepouts cover this pass's rooms, not every legacy object.
+
+---
+
 # DuderWorld V0.4 — procedural level generation for TrontEOS
 
 **Standalone offline V0.4 layout studio:** [static.html](static.html).
@@ -27,7 +63,7 @@ npm run export:worldmeta # optional recipe/output arguments
 
 # DuderWorld V0.3 — Tront-EOS social archipelago
 
-**The newest scene is [duderworld-v0-3.html](duderworld-v0-3.html).** Open it
+**The preserved V0.3 scene is [duderworld-v0-3.html](duderworld-v0-3.html).** Open it
 directly in a modern desktop browser: it is a **self-contained, offline**
 Three.js island world, no server, license-sensitive imported models, or CDN.
 

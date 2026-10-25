@@ -1,0 +1,182 @@
+{
+  "source": {
+    "repository": "TrentSterling/duderworld",
+    "upstreamCommit": "f204f2ac5021c02089f0dd96022fb3e6efef8674",
+    "upstreamVersion": "0.4.0",
+    "candidateVersion": "0.4.1",
+    "branch": "codex/rounded-lobby-20261025"
+  },
+  "method": {
+    "viewport": [
+      1600,
+      1000
+    ],
+    "devicePixelRatio": 1,
+    "gpu": {
+      "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 5070 Ti (0x00002C05) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "vendor": "Google Inc. (NVIDIA)"
+    },
+    "pairs": 3,
+    "samplesPerViewPerRun": {
+      "gpu": 140,
+      "cpuAndFrameInterval": 120
+    },
+    "drawCountsIncludeShadows": true,
+    "timer": "EXT_disjoint_timer_query_webgl2",
+    "baselineRepair": "Defined the missing TAU constant and added inspection API; no baseline geometry or lighting changes.",
+    "frameIntervalNote": "Headless browser frame scheduling was approximately16.7ms. GPU time is not reciprocal maximum FPS.",
+    "candidateTimingBuildSHA256": "2793af716bcc1ddb8a7b329a24b438d58bb7586e24d76466d42270b9b9b4d367",
+    "finalBuildSHA256": "0f1d9fb1387c658ba3dc0db7ac125c4a96bb09bef209fa639488102eb41df01a",
+    "postTimingChange": "Metadata export gained explicit deckLength and centerDistance fields; renderer and geometry unchanged."
+  },
+  "geometry": {
+    "before": {
+      "triangles": 305750,
+      "vertices": 227625,
+      "meshes": 18
+    },
+    "after": {
+      "triangles": 288460,
+      "vertices": 192274,
+      "meshes": 18
+    }
+  },
+  "views": {
+    "world": {
+      "before": {
+        "drawCallsAllPasses": 43,
+        "trianglesAllPasses": 678964,
+        "gpuMedianMs": 2.646976,
+        "gpuMedianRangeMs": [
+          2.631232,
+          2.696832
+        ],
+        "gpuP95MedianMs": 4.068928,
+        "cpuSubmissionMedianMs": 0.20000004768371582,
+        "frameIntervalMedianMs": 16.699999809265137
+      },
+      "after": {
+        "drawCallsAllPasses": 38,
+        "trianglesAllPasses": 642546,
+        "gpuMedianMs": 2.783136,
+        "gpuMedianRangeMs": [
+          2.745952,
+          2.915808
+        ],
+        "gpuP95MedianMs": 3.973408,
+        "cpuSubmissionMedianMs": 0.20000004768371582,
+        "frameIntervalMedianMs": 16.699999809265137
+      },
+      "gpuMedianDeltaMs": 0.13615999999999984
+    },
+    "voice": {
+      "before": {
+        "drawCallsAllPasses": 35,
+        "trianglesAllPasses": 517960,
+        "gpuMedianMs": 2.708896,
+        "gpuMedianRangeMs": [
+          2.661344,
+          2.811488
+        ],
+        "gpuP95MedianMs": 4.019648,
+        "cpuSubmissionMedianMs": 0.20000004768371582,
+        "frameIntervalMedianMs": 16.699999809265137
+      },
+      "after": {
+        "drawCallsAllPasses": 27,
+        "trianglesAllPasses": 411736,
+        "gpuMedianMs": 2.760064,
+        "gpuMedianRangeMs": [
+          2.734176,
+          2.886272
+        ],
+        "gpuP95MedianMs": 4.042656,
+        "cpuSubmissionMedianMs": 0.20000004768371582,
+        "frameIntervalMedianMs": 16.700000047683716
+      },
+      "gpuMedianDeltaMs": 0.05116799999999966
+    },
+    "friends": {
+      "before": {
+        "drawCallsAllPasses": 33,
+        "trianglesAllPasses": 484072,
+        "gpuMedianMs": 2.749472,
+        "gpuMedianRangeMs": [
+          2.607936,
+          2.78432
+        ],
+        "gpuP95MedianMs": 3.9896,
+        "cpuSubmissionMedianMs": 0.20000004768371582,
+        "frameIntervalMedianMs": 16.699999809265137
+      },
+      "after": {
+        "drawCallsAllPasses": 25,
+        "trianglesAllPasses": 373768,
+        "gpuMedianMs": 2.733216,
+        "gpuMedianRangeMs": [
+          2.647904,
+          2.74192
+        ],
+        "gpuP95MedianMs": 4.027872,
+        "cpuSubmissionMedianMs": 0.20000004768371582,
+        "frameIntervalMedianMs": 16.700000047683716
+      },
+      "gpuMedianDeltaMs": -0.016255999999999826
+    },
+    "inside": {
+      "before": {
+        "drawCallsAllPasses": 29,
+        "trianglesAllPasses": 421622,
+        "gpuMedianMs": 2.755328,
+        "gpuMedianRangeMs": [
+          2.745024,
+          2.835776
+        ],
+        "gpuP95MedianMs": 4.29408,
+        "cpuSubmissionMedianMs": 0.20000004768371582,
+        "frameIntervalMedianMs": 16.699999809265137
+      },
+      "after": {
+        "drawCallsAllPasses": 20,
+        "trianglesAllPasses": 287506,
+        "gpuMedianMs": 2.79392,
+        "gpuMedianRangeMs": [
+          2.778208,
+          2.84704
+        ],
+        "gpuP95MedianMs": 4.049696,
+        "cpuSubmissionMedianMs": 0.10000014305114746,
+        "frameIntervalMedianMs": 16.700000047683716
+      },
+      "gpuMedianDeltaMs": 0.03859199999999996
+    },
+    "skate": {
+      "before": {
+        "drawCallsAllPasses": 43,
+        "trianglesAllPasses": 678964,
+        "gpuMedianMs": 3.227968,
+        "gpuMedianRangeMs": [
+          2.709824,
+          3.32592
+        ],
+        "gpuP95MedianMs": 5.48064,
+        "cpuSubmissionMedianMs": 0.19999980926513672,
+        "frameIntervalMedianMs": 16.699999809265137
+      },
+      "after": {
+        "drawCallsAllPasses": 38,
+        "trianglesAllPasses": 642546,
+        "gpuMedianMs": 2.991328,
+        "gpuMedianRangeMs": [
+          2.852704,
+          3.601472
+        ],
+        "gpuP95MedianMs": 4.159296,
+        "cpuSubmissionMedianMs": 0.20000004768371582,
+        "frameIntervalMedianMs": 16.700000047683716
+      },
+      "gpuMedianDeltaMs": -0.23663999999999996
+    }
+  },
+  "qualification": "Desktop headless WebGL only. No Quest, Unity, stereo VR, EOS, networking or thermal qualification."
+}
