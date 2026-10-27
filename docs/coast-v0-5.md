@@ -1,10 +1,18 @@
-# DuderWorld Coast V0.5.0
+# DuderWorld Coast V0.5.1
 
-A compact, authored visual study built with Three.js. This is an environment modeling lab, not a web game. Approved geometry will be converted to Unity locally later.
+A compact Three.js environment modeling lab, not a web game. Approved geometry will be converted to Unity locally later. The original V0.2/V0.3/V0.4 previews and the default `static.html` are unchanged.
 
-## Preview and build
+## Skatepark and clearance pass
 
-Open `duderworld-coast-v0-5.html` directly from disk. It is self-contained and needs no CDN, server, network request, or runtime install. The preserved V0.2 lobby, V0.3 world, V0.4 studio and default `static.html` are not overwritten.
+The oversized bowl has been resized and shifted to leave a separate street lane. Its floor and transition have shared derivative normals, continuous atlas shading and a flush roll-in section without raised coping across the mouth. The quarter pipe has a curved riding surface, closed side cheeks, a supported rear deck and a rear rail. The low grind box and separate rail are positioned away from the entrance and quarter-pipe run-out.
+
+Palms now sit in dedicated beds, rather than in the ramp footprint. Spectator seats have their own access space. Hub benches are split around the actual bridge approach corridors. Two beach-entry plants were moved away from the stairs. Bridge decks and rails were widened together; measuring only the centerline was insufficient.
+
+The scene remains deliberately small. This update improves the existing three spaces; it does not add more islands, gameplay, character controllers or networking.
+
+## Run and build
+
+Open `duderworld-coast-v0-5.html` directly from disk. It is a self-contained offline build with no external runtime dependencies. The filename is the stable Coast preview URL; the on-screen version identifies this patch as 0.5.1.
 
 ```
 npm ci
@@ -12,55 +20,33 @@ npm run build:coast
 npm test
 ```
 
-Orbit with left drag, pan with right drag, zoom with the wheel. Keys 1-4 select overview, courtyard, skatepark and beach. H hides the interface, D toggles scale figures and W toggles wireframe. The GLB button exports static scenery and named anchors; Recipe downloads metadata; Atlas downloads the shared palette PNG.
+Left drag orbits, right drag pans, and the wheel zooms. Keys 1-4 select the overview, hub, skatepark and beach. H hides the interface, D toggles the scale figures and W toggles wireframe. Export GLB saves scenery and anchors; Recipe saves metadata; Atlas saves the palette image.
 
-## This art pass
+## Rendering and export
 
-Three related spaces, rather than seven lightly dressed platforms:
+- One embedded 128x128 palette atlas. UVs are swatch coordinates, not a general texture unwrap or lightmap UV set. Bowl segments share a continuous height gradient rather than restarting the gradient on every strip.
+- Two opaque standard materials: roughness 0.94 for scenery and 0.82 for restrained hero accents. Both have metalness 0, opacity 1, no alpha test and no transparency.
+- Nine indexed scenery batches, merged by area and material, without multi-material geometry groups. The default scenery is 208,260 triangles and 199,953 indexed vertex records.
+- Optional scale figures add one batch and 20,532 triangles. The observed steady overview render is 9 draws without figures and 10 with them. Shadow-map work is additional; these are software-renderer measurements, not hardware performance claims.
+- Water, foam, foliage, umbrellas and portal panels remain opaque. No bloom, refraction or reflection pass is used.
+- GLB contains nine scenery meshes, two materials, one embedded palette image and six named anchors. Units are meters with +Y up. Preserve the atlas's linear filtering without mipmaps, or provide a gutter-aware mip chain.
 
-- A compact portal courtyard with substantial layered arches, inset opaque portal panels, a central palm planter, concentric paving, curved seating and integrated garden beds.
-- A skatepark with a real recessed bowl opening, curved kicker, grind ledge, terrace and spectator seating.
-- A low beach with a solid striped kiosk canopy, modeled umbrellas and loungers, connected entrance stairs, dock and rowboat.
+The preview figures are not DuderLab assets and are excluded from GLB. No Unity project, shaders, colliders, lightmap UVs, navmesh or physics systems were added. The boat, dock and skate props remain baked scenery.
 
-Bridges, cliffs, shoreline bands and offshore rocks connect the composition. Foliage is solid geometry, not alpha cards. Water and foam are opaque static surfaces. No bloom, refraction, transmission, transparent material or reflection pass is used.
+## Verification and boundaries
 
-This is an authored default composition. Seed changes only limited offshore planting variation. The optional greenery switch removes optional palms, not all plants. It is not the arbitrary-island-count V0.4 generator.
+`npm test` runs the four preserved suites, Coast geometry checks and the new clearance suite. `qa/check-coast-clearance.mjs` casts against actual merged render meshes at 1,498 sample positions across five authored routes: both 3 m hub exits, the 3 m skatepark entrance, a 2.2 m street run-out and a 1.65 m spectator-access path. It checks floor availability and sampled obstacles up to 2.1 m above the nominal floor. Bowl floor and tangent continuity are checked separately.
 
-## Rendering and export contract
+These are sampled regression checks for named corridors, not a continuous swept-capsule proof or a complete world collision audit. They do not validate skating physics or every decorative intersection.
 
-- One embedded **128x128 palette atlas**. Each swatch has a wide gutter and a mild vertical tone gradient. The UVs are authored for this atlas, not a general-purpose texture unwrap or lightmap UV set.
-- Two standard materials: matte scenery (roughness 0.94), and a restrained portal/lamp accent (roughness 0.82, low emissive contribution). Both have metalness 0, opacity 1, no alpha test and no transparency.
-- Nine indexed scenery batches, merged by spatial area and material. There are no hidden multi-material geometry groups. Area boundaries remain useful for culling and later conversion.
-- Default static environment: **201,872 triangles and 198,827 indexed vertex records**. Optional preview figures add one batch and 20,532 triangles.
-- The browser reports **9 steady main-view calls without figures, 10 with figures**. Shadow-map work is additional. The 2048px shadow map is refreshed when geometry visibility changes, not on every camera movement. These are draw-count observations, not a hardware performance claim.
-- GLB contains nine scenery meshes, two opaque materials, one embedded PNG, named area groups and six named anchors. The atlas uses linear filtering without mipmaps; preserve that sampling when importing or add a suitable gutter-aware mip chain.
-- Meter units, +Y up. Cliff, bridge and courtyard heights are explicit; the beach is lower than the hub and has modeled connecting steps. Retain normals, indices, UVs and node transforms when converting.
-
-The little beans are static scale-reference figures, **not the actual DuderLab mesh or rig**. They stay separate and are excluded from GLB. DuderLab is untouched.
-
-No Unity project, Unity shader, collider system, lightmap UVs, navmesh, network component or gameplay was added. The dock, boat and skate props are currently baked static scenery, not separate simulated or networked actors. Mesh part ranges and anchors provide identification, not a finished interaction system.
-
-## Verification
-
-`qa/check-coast.mjs` validates finite indexed geometry, nondegenerate winding, normals, atlas UV gutters, material count/opacity, draw-budget boundaries, bowl and landing raycasts, outward cliff faces and recipe reproducibility. The original four test suites are still included in `npm test`.
-
-`qa/check-coast-browser.py` boots the exact built HTML in Chromium with ANGLE SwiftShader. It captures four camera presets, checks nonblank rendering, inspects console errors, exercises camera/wireframe/figure controls and downloads the GLB, metadata and atlas. It does not navigate to any external website. On Linux where ANGLE needs an X server:
+Browser acceptance checks load the exact built HTML, inspect four nonblank camera views, exercise controls and downloads, and verify a GLB round trip. Local Chromium with ANGLE SwiftShader reported no viewer errors or warnings, and no external runtime requests. The round trip preserved positions, normals, UVs and indices exactly. The QA-only loader creates a second Three.js instance and emits its expected duplicate-import warning.
 
 ```
-xvfb-run -a python3 qa/check-coast-browser.py --out output/coast
+xvfb-run -a python3 qa/check-coast-browser.py --out output/coast --roundtrip-script /path/to/bundled-roundtrip.js
 ```
 
-This optional QA tool requires Python Playwright, Pillow and an installed Chromium; these are not application dependencies.
+The optional QA tools require Python Playwright, Pillow and Chromium; they are not application dependencies. Bundle `qa/coast-roundtrip-entry.js` using the existing esbuild dependency for the extra round-trip check. Unity import and real hardware/Quest performance remain untested.
 
-To additionally load and compare the exported GLB, bundle `qa/coast-roundtrip-entry.js` with the existing esbuild dependency and supply its path through `--roundtrip-script`. The test compares every position, normal, UV and index, verifies exactly two materials and one embedded atlas, and confirms the preview crowd is absent. A second QA-only Three.js bundle can emit a duplicate-import warning; the ordinary viewer does not load that bundle.
+## Sources
 
-The release was locally checked in software Chromium: no viewer console/page errors, no viewer warnings and no external runtime requests. The GLB round-trip preserved geometry attributes and indices exactly. Browser inspection also caught and corrected initial cliff winding and ramp-placement problems. Unity import and hardware/Quest performance have **not** been tested.
-
-## Source organization
-
-- `src/coast-kit.mjs`: palette, opaque materials, mesh batching and modeling helpers.
-- `src/coast-world.mjs`: the three authored environments, support scenery and preview figures.
-- `src/coast-viewer.js`: camera inspection, rendering, export and QA hooks.
-- `build-coast.mjs`: standalone HTML bundling; does not rebuild old previews.
-
-The CI preparation helper creates immutable build blobs and a downloadable manifest. It never moves branches or commits by itself. Publishing a reviewed build is a separate explicit Git commit.
+`src/coast-kit.mjs` contains the shared atlas, batching and modeling helpers. `src/coast-world.mjs` composes the hub, beach, bridges and figures. `src/coast-skate.mjs` owns the authored skatepark layout and smooth surfaces. `src/coast-viewer.js` contains inspection cameras and exports. `build-coast.mjs` creates the offline HTML without rebuilding preserved previews.

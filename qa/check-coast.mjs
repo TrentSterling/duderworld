@@ -41,7 +41,7 @@ function check(world){
 const world=buildCoast(materials),report=check(world);
 const meshes=[];world.root.traverse(o=>{if(o.isMesh)meshes.push(o);});
 const ray=new THREE.Raycaster(),surface=(x,z)=>{ray.set(new THREE.Vector3(x,20,z),new THREE.Vector3(0,-1,0));return ray.intersectObjects(meshes,false)[0]?.point.y;};
-assert.ok(Math.abs(surface(24.1,5.5)+1.4)<.04,'Bowl is recessed and not covered by a deck');
+assert.ok(Math.abs(surface(25.2,6.0)+1.0)<.04,'Bowl is recessed and not covered by a deck');
 assert.ok(Math.abs(surface(0,4.3)-.697)<.08,'Hub spawn on paving');
 assert.ok(Math.abs(surface(-22,9)-SITES.beach.y)<.05,'Beach spawn on sand');
 for(const br of world.metadata.bridges){

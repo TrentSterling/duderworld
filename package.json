@@ -9,12 +9,13 @@
     "build:coast": "node build-coast.mjs",
     "bake": "node qa/bake-glb.mjs",
     "bake:archipelago": "node qa/bake-archipelago.mjs",
-    "test": "node qa/check-geometry.mjs && node qa/check-build.mjs && node qa/check-archipelago.mjs && node qa/check-layout-graph-v0-4.mjs && node qa/check-coast.mjs",
+    "test": "node qa/check-geometry.mjs && node qa/check-build.mjs && node qa/check-archipelago.mjs && node qa/check-layout-graph-v0-4.mjs && node qa/check-coast.mjs && node qa/check-coast-clearance.mjs",
     "test:coast": "node qa/check-coast.mjs",
     "test:archipelago": "node qa/check-archipelago.mjs",
     "build:studio": "node build-v0-4.mjs",
     "test:layout": "node qa/check-layout-graph-v0-4.mjs",
-    "export:worldmeta": "node qa/export-world-metadata-v0-4.mjs"
+    "export:worldmeta": "node qa/export-world-metadata-v0-4.mjs",
+    "test:clearance": "node qa/check-coast-clearance.mjs"
   },
   "dependencies": {
     "esbuild": "0.25.12",

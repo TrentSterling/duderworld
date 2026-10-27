@@ -71,7 +71,8 @@ export class Batch {
       const c=new THREE.Vector3().fromBufferAttribute(p,ids[2]);
       if(b.sub(a).cross(c.sub(a)).lengthSq()<1e-17)continue;
       for(const k of ids){
-        const h=THREE.MathUtils.clamp((p.getY(k)-lo)/dy,0,1);
+        const height=geometry.getAttribute('paletteHeight');
+        const h=THREE.MathUtils.clamp(height?height.getX(k):(p.getY(k)-lo)/dy,0,1);
         pos.fromBufferAttribute(p,k).applyMatrix4(matrix);
         normal.fromBufferAttribute(normals,k).applyMatrix3(normalMatrix).normalize();
         dst.p.push(pos.x,pos.y,pos.z);dst.n.push(normal.x,normal.y,normal.z);

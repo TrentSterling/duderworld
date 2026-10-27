@@ -4,7 +4,9 @@ import * as THREE from 'three';
 import {Batch,TAU,box,ellipsoid,cylinder,bar,tube,slab,ellipsePoints,arcBlock,
   floorTile,roundedArch,geometry,seeded} from './coast-kit.mjs';
 
-export const COAST_VERSION='0.5.0';
+import {buildSkate,SKATE_PLAN} from './coast-skate.mjs';
+
+export const COAST_VERSION='0.5.1';
 export const SITES=Object.freeze({hub:{x:0,z:-4,r:12,y:.65},skate:{x:23,z:5,r:10.4,y:.65},beach:{x:-22,z:9,r:8.8,y:-2.45}});
 const SEA=-3.45;
 function islandRadius(r,a,seed=0){return r*(1+.024*Math.sin(a*5+seed)+.018*Math.cos(a*9));}
@@ -105,6 +107,28 @@ function perimeter(b,site,openings=[],backHigh=false){
     }
   }
 }
+function safeBench(b,x,z,r0,r1,y,a0,a1,col,paths){
+  const segments=Math.ceil((a1-a0)/.025),step=(a1-a0)/segments;
+  let start=null;
+  for(let i=0;i<=segments;i++){
+    const a=a0+i*step,mid=a+step/2,r=(r0+r1)/2;
+    const p=[x+Math.cos(mid)*r,z+Math.sin(mid)*r];
+    const safe=i<segments&&paths.every(path=>pointSegmentDistance(p,path.a,path.b)>path.width/2+(r1-r0)/2+.22);
+    if(safe&&start===null)start=a;
+    if(!safe&&start!==null){if(a-start>.20)benchArc(b,x,z,r0,r1,y,start,a,col);start=null;}
+  }
+}
+function pointSegmentDistance(p,a,b){
+  const dx=b[0]-a[0],dz=b[1]-a[1],length=dx*dx+dz*dz;
+  const t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dz)/length));
+  return Math.hypot(p[0]-a[0]-dx*t,p[1]-a[1]-dz*t);
+}
+export function hubPaths(){
+  return [SITES.skate,SITES.beach].map((s,i)=>{
+    const h=SITES.hub,dx=s.x-h.x,dz=s.z-h.z,L=Math.hypot(dx,dz);
+    return {id:i?'hub-to-beach':'hub-to-skate',a:[h.x+dx/L*4.9,h.z+dz/L*4.9],b:[h.x+dx/L*12.35,h.z+dz/L*12.35],width:3.0,y:h.y};
+  });
+}
 function benchArc(b,x,z,r0,r1,y,a0,a1,col='coral'){
   arcBlock(b,x,z,r0,r1,y,.36,a0,a1,'ivory');
   const cushions=Math.max(2,Math.round((a1-a0)*(r0+r1)/3));
@@ -171,12 +195,12 @@ function hub(b,config){
     box(b,[sign*7.5,y+2.25,-9.0],[2.7,.26,2.7],'salmon',.12);
     plant(b,sign*7.5,y+2.40,-9.0,1.0,sign);
     const a0=sign<0?2.42:-.44,a1=sign<0?3.53:.68;
-    benchArc(b,0,-1,7.6,8.48,y+.06,a0,a1,sign<0?'gold':'coral');
+    safeBench(b,0,-1,7.6,8.48,y+.06,a0,a1,sign<0?'gold':'coral',hubPaths());
     plant(b,sign*8.8,y,-5.2,.95);
-    plant(b,sign*8.7,y,2.4,1.0);
+    plant(b,sign*9.0,y,sign<0?-2.0:2.8,.85);
     if(config.greenery){palm(b,sign*9.0,y,-9.0,4.0,sign<0?.6:2.5);}
   }
-  for(const [px,pz,s] of [[-5,6,.85],[5,6,.85],[-10,-1,.7],[10,-1,.7]])plant(b,px,y,pz,s);
+  for(const [px,pz,s] of [[-5,6,.85],[5,6,.85],[-10,-4.0,.7],[10,-4.0,.7]])plant(b,px,y,pz,s);
   // Integrated garden beds give the perimeter depth without filling the paths.
   for(const a of [.90,2.12,3.2,-.12]){
     const rr=10.25,lo=a-.18,hi=a+.18;
@@ -193,52 +217,7 @@ function hub(b,config){
   // Low arrival steps in the front opening.
   for(let i=0;i<3;i++)box(b,[0,y-.1-i*.23,7.7+i*.42],[3.0+i*.2,.24,.88],'ivory',.055);
 }
-function bowl(b,x,z,y){
-  const rx=6.25,rz=5.6,depth=2.05,n=72;
-  const profile=[[0,-depth],[.25,-depth],[.44,-depth+.03],[.61,-depth+.16],
-    [.74,-depth+.46],[.86,-depth+.94],[.95,-depth+1.51],[1,0],[1.06,.06],[1.10,.08]];
-  // Each strip has smooth profile normals, with distinct palette bands.
-  for(let j=0;j<profile.length-1;j++)for(let segment=0;segment<12;segment++){
-    const verts=[],ix=[],a0=segment*TAU/12,a1=(segment+1)*TAU/12;
-    for(let i=0;i<=6;i++)for(const k of [j,j+1]){
-      const a=a0+(a1-a0)*i/6,[r,h]=profile[k],warp=1+.075*Math.sin(a*3);
-      verts.push([x+Math.cos(a)*rx*r*warp,y+h,z+Math.sin(a)*rz*r]);
-    }
-    for(let i=0;i<6;i++){const k=i*2;ix.push(k,k+3,k+1,k,k+2,k+3);}
-    const col=j>=8?'ivory':j===7?'gold':j<=2?'sky':
-      segment>=8&&segment<=10?'salmon':segment===1||segment===2?'ivory':'blue';
-    b.add(geometry(verts,ix),col);
-  }
-  const ring=Array.from({length:n},(_,i)=>{const a=i*TAU/n;return[x+Math.cos(a)*rx*1.055*(1+.075*Math.sin(a*3)),y+.11,z+Math.sin(a)*rz*1.055];});
-  tube(b,ring,.075,'porcelain',false,true);
-  return {x,z,rx,rz,depth,lipY:y};
-}
-function skate(b,config){
-  const s=SITES.skate,{x,z,y}=s,bcx=x+1.1,bcz=z+.5;
-  const hole=Array.from({length:72},(_,i)=>{const a=i*TAU/72;return[bcx+Math.cos(a)*6.25*1.10*(1+.075*Math.sin(a*3)),bcz+Math.sin(a)*5.6*1.10];});
-  island(b,s,[hole]);bowl(b,bcx,bcz,y);
-  perimeter(b,s,[Math.atan2(SITES.hub.z-z,SITES.hub.x-x),Math.PI/2],false);
-  // The back terrace is a single composed seating edge, not a ring of props.
-  for(let i=0;i<3;i++)box(b,[x,y+.15+i*.27,z-7.65-i*.36],[11.8-i*.5,.30,2.1-i*.35],i%2?'ivory':'peach',.09);
-  for(const off of [-3.8,2.8]){
-    box(b,[x+off,y+1.08,z-8.1],[2.7,.24,.74],'coral',.12);
-    box(b,[x+off,y+1.48,z-8.48],[2.8,.73,.2],'ivory',.07);
-  }
-  // Solid curved kicker with modeled cheek supports.
-  const shape=new THREE.Shape();shape.moveTo(-2,0);shape.lineTo(2,0);shape.lineTo(2,1.35);
-  shape.quadraticCurveTo(-.6,.02,-2,.12);shape.closePath();
-  const ramp=new THREE.ExtrudeGeometry(shape,{depth:1.8,steps:1,bevelEnabled:true,bevelSize:.05,bevelThickness:.05,bevelSegments:2,curveSegments:16});
-  b.add(ramp,'sky',[x-5.1,y+.035,z-6.4],[0,0,0]);
-  box(b,[x-7.2,y+.28,z+4.1],[1.1,.55,3.5],'salmon',.1);
-  box(b,[x-7.2,y+.60,z+4.1],[1.18,.10,3.6],'porcelain',.04);
-  bar(b,[x-7.2,y+.63,z+2.4],[x-7.2,y+1.10,z+2.4],.065,'ink');
-  bar(b,[x-7.2,y+.63,z+5.5],[x-7.2,y+1.10,z+5.5],.065,'ink');
-  bar(b,[x-7.2,y+1.10,z+2.4],[x-7.2,y+1.10,z+5.5],.09,'blue');
-  for(const [dx,dz] of [[-6.0,-7],[6.8,-6.6],[7.4,5.8]]){
-    plant(b,x+dx,y,z+dz,.8);if(config.greenery&&dz<0)palm(b,x+dx+.3,y,z+dz+.7,3.5,dx);
-  }
-  skateboard(b,x-5,y+.17,z+6.2,.35);
-}
+function skate(b,config){buildSkate(b,config,SITES.skate,{island,perimeter,plant,palm,skateboard});}
 function umbrella(b,x,y,z,r=1.8,color='coral'){
   bar(b,[x,y,z],[x,y+2.65,z],.06,'wood');
   cylinder(b,[x,y,z],.34,.12,'ivory',.31,14);
@@ -309,8 +288,8 @@ function beach(b,config){
     cylinder(b,[x+dx,y,z+dz],.10,.46,'woodDark',.09,10);
     cylinder(b,[x+dx,y+.46,z+dz],.42,.09,'porcelain',.42,20);
   }
-  if(config.greenery)for(const [dx,dz,h,a] of [[-6.4,-1,4.3,.5],[-5,-4.7,3.7,.3],[4.3,-4.5,4.0,2.1],[5.9,2.0,3.5,2.8]])palm(b,x+dx,y,z+dz,h,a);
-  for(const [dx,dz,s] of [[-6,-4.8,.65],[-6.7,-3,.7],[5.0,-5,.8],[6,2.5,.65]])plant(b,x+dx,y,z+dz,s);
+  if(config.greenery)for(const [dx,dz,h,a] of [[-6.4,-1,4.3,.5],[-5,-4.7,3.7,.3],[1.5,-6.3,4.0,2.1],[5.9,2.0,3.5,2.8]])palm(b,x+dx,y,z+dz,h,a);
+  for(const [dx,dz,s] of [[-6,-4.8,.65],[-6.7,-3,.7],[3.4,-6.2,.7],[6,2.5,.65]])plant(b,x+dx,y,z+dz,s);
   // Landing stair ties the high bridge to the low beach, with no floating tread.
   const dx=SITES.hub.x-x,dz=SITES.hub.z-z,L=Math.hypot(dx,dz),ux=dx/L,uz=dz/L,yaw=Math.atan2(-uz,ux);
   const stairCount=Math.ceil((.71-y)/.28),rise=(.71-y)/stairCount;
@@ -348,23 +327,23 @@ function bridge(b,a,c){
   const dx=c.x-a.x,dz=c.z-a.z,dist=Math.hypot(dx,dz),ux=dx/dist,uz=dz/dist;
   const start=a.r*.94,end=dist-c.r*.90,len=end-start,mid=(start+end)/2,y=.65,yaw=Math.atan2(-uz,ux);
   const pt=(t,w,h=y)=>[a.x+ux*t-uz*w,h,a.z+uz*t+ux*w];
-  box(b,pt(mid,0,y-.22),[len+.45,.43,3.25],'ivory',.12,yaw);
+  box(b,pt(mid,0,y-.22),[len+.45,.43,3.55],'ivory',.12,yaw);
   for(let i=0;i<Math.ceil(len/.6);i++){
     const t=start+(i+.5)*len/Math.ceil(len/.6);
-    box(b,pt(t,0,y+.03),[len/Math.ceil(len/.6)-.028,.06,2.98],i%4?'porcelain':'peach',.015,yaw);
+    box(b,pt(t,0,y+.03),[len/Math.ceil(len/.6)-.028,.06,3.30],i%4?'porcelain':'peach',.015,yaw);
   }
   for(const side of [-1,1]){
-    const points=[start,mid,end].map(t=>pt(t,side*1.58,y+.93));tube(b,points,.09,'sky');
-    bar(b,pt(start,side*1.58,y+.45),pt(end,side*1.58,y+.45),.035,'ivory');
+    const points=[start,mid,end].map(t=>pt(t,side*1.73,y+.93));tube(b,points,.09,'sky');
+    bar(b,pt(start,side*1.73,y+.45),pt(end,side*1.73,y+.45),.035,'ivory');
     for(const t of [start,mid,end]){
-      bar(b,pt(t,side*1.58,y-.1),pt(t,side*1.58,y+.9),.075,'ivory');
-      if(t!==mid)bollard(b,...[pt(t,side*1.72)[0],y,pt(t,side*1.72)[2]]);
+      bar(b,pt(t,side*1.73,y-.1),pt(t,side*1.73,y+.9),.075,'ivory');
+      if(t!==mid)bollard(b,...[pt(t,side*1.94)[0],y,pt(t,side*1.94)[2]]);
     }
     for(const t of [start+.35,end-.35]){
       const p=pt(t,side*1.1,SEA-.25);cylinder(b,p,.28,y-SEA+.03,'stoneLight',.32,12);
     }
   }
-  return {from:a===SITES.hub?'hub':'unknown',to:c===SITES.skate?'skate':'beach',width:3.25,start:pt(start,0),end:pt(end,0)};
+  return {from:a===SITES.hub?'hub':'unknown',to:c===SITES.skate?'skate':'beach',width:3.55,start:pt(start,0),end:pt(end,0)};
 }
 function sea(b){
   const n=38,size=180,v=[],ix=[];
@@ -420,14 +399,14 @@ export function buildCoast(materials,options={}){
   const water=new Batch('ocean');sea(water);const ocean=water.finish(materials);
   ocean.traverse(o=>{if(o.isMesh)o.castShadow=false;});root.add(ocean);
   const anchors=new THREE.Group();anchors.name='Anchors';
-  for(const [name,p] of Object.entries({HubSpawn:[0,.65,4.3],SkateSpawn:[17.3,.65,9],BeachSpawn:[-22,SITES.beach.y,9],PortalBlue:[-3.5,1.35,-10.8],PortalGold:[0,1.35,-10.8],PortalPink:[3.5,1.35,-10.8]})){
+  for(const [name,p] of Object.entries({HubSpawn:[0,.65,4.3],SkateSpawn:[17.3,.65,9.7],BeachSpawn:[-22,SITES.beach.y,9],PortalBlue:[-3.5,1.35,-10.8],PortalGold:[0,1.35,-10.8],PortalPink:[3.5,1.35,-10.8]})){
     const obj=new THREE.Object3D();obj.name=name;obj.position.fromArray(p);anchors.add(obj);
   }
   root.add(anchors);
   const people=new Batch('preview_scale_figures');
   for(const [x,z,c,h,a] of [[-4,1,'blue','ink',.4],[4,1.5,'pink','ivory',-.6],[1,4.8,'gold','wood',-.3],[-3,-7,'aqua','ivory',1.7],[4,-7,'coral','gold',-1.9],[7,4,'violet','ink',1],[-7,-3,'mint','white',-.8]])bean(people,x,.70,z,c,h,a);
-  bean(people,22,-1.12,5.2,'aqua','ink',.4);skateboard(people,22,-1.31,5.2,.4);
-  bean(people,16.4,.7,8.5,'coral','navy',1);
+  bean(people,25.2,-.72,6.0,'aqua','ink',.4);skateboard(people,25.2,-.91,6.0,.4);
+  bean(people,21.0,.70,10.9,'coral','navy',1);
   bean(people,24,.7,12.5,'gold','black',-1.2);
   bean(people,-22,SITES.beach.y+.05,9,'violet','coral',.8);
   bean(people,-17.5,SITES.beach.y+.05,11.3,'aqua','ivory',-.2);
@@ -435,6 +414,7 @@ export function buildCoast(materials,options={}){
   const stats={triangles:0,vertices:0,draws:0,materials:2,atlasSize:128};
   root.traverse(o=>{if(o.isMesh){stats.draws++;stats.triangles+=o.geometry.index.count/3;stats.vertices+=o.geometry.attributes.position.count;}});
   const metadata={...root.userData,sites:SITES,bridges:bridgeData,stats,anchors:Object.fromEntries(anchors.children.map(a=>[a.name,a.position.toArray()])),
+    clearance:{hubPaths:hubPaths(),skatePlan:SKATE_PLAN,scope:'Authored arrival paths and skate run-out only; not navmesh or gameplay collision.'},
     rendering:{opaque:true,transparentMaterials:0,paletteAtlas:'128x128',matteRoughness:.94,heroRoughness:.82,metalness:0},
     notes:['Preview figures are not DuderLab rigs and are excluded from GLB.','No colliders, gameplay or Unity package included.','Static scenery includes dock, boat and skate props.']};
   return {root,crowd,stats,metadata,chunks};
