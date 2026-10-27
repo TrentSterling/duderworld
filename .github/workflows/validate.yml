@@ -1,0 +1,42 @@
+name: Validate geometry and prepare offline review
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'qa/**'
+      - 'package*.json'
+      - 'build*'
+      - '.github/workflows/validate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Run geometry and build checks
+        run: npm test
+      - name: Package an offline review workspace
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD > REVIEW_COMMIT.txt
+          tar --exclude='./.git' --exclude='./.github' -czf "$RUNNER_TEMP/duderworld-workspace.tar.gz" .
+      - name: Upload review workspace
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: duderworld-workspace
+          path: ${{ runner.temp }}/duderworld-workspace.tar.gz
+          retention-days: 1
