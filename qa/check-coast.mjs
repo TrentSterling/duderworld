@@ -35,7 +35,7 @@ function check(world){
     }
   });
   assert.equal(mat.size,2);assert.equal(meshes,world.stats.draws);assert.equal(triangles,world.stats.triangles);assert.equal(vertices,world.stats.vertices);
-  assert.ok(meshes<=10);assert.ok(triangles<230000);
+  assert.ok(meshes<=10);assert.ok(triangles<325000,'Coast 0.5.2 solid foliage budget: 325k triangles');
   return {triangles,vertices,meshes,minArea};
 }
 const world=buildCoast(materials),report=check(world);

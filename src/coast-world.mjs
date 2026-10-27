@@ -5,8 +5,9 @@ import {Batch,TAU,box,ellipsoid,cylinder,bar,tube,slab,ellipsePoints,arcBlock,
   floorTile,roundedArch,geometry,seeded} from './coast-kit.mjs';
 
 import {buildSkate,SKATE_PLAN} from './coast-skate.mjs';
+import {planter as plant,palm,rosette,leafySprig,flower,grassClump,offshore,ISLETS} from './coast-botany.mjs';
 
-export const COAST_VERSION='0.5.1';
+export const COAST_VERSION='0.5.2';
 export const SITES=Object.freeze({hub:{x:0,z:-4,r:12,y:.65},skate:{x:23,z:5,r:10.4,y:.65},beach:{x:-22,z:9,r:8.8,y:-2.45}});
 const SEA=-3.45;
 function islandRadius(r,a,seed=0){return r*(1+.024*Math.sin(a*5+seed)+.018*Math.cos(a*9));}
@@ -38,45 +39,6 @@ function island(b,site,holes=[],beach=false){
   }
   for(let i=0;i<n;i++){let j=i*2;ind.push(j,j+3,j+1,j,j+2,j+3);}
   b.add(geometry(verts,ind),'foam');
-}
-function plant(b,x,y,z,s=1,angle=0){
-  cylinder(b,[x,y,z],.48*s,.6*s,'ivory',.58*s,14);
-  cylinder(b,[x,y+.53*s,z],.55*s,.10*s,'porcelain',.58*s,16);
-  cylinder(b,[x,y+.60*s,z],.43*s,.035*s,'woodDark',.43*s,14);
-  for(let i=0;i<7;i++){
-    const a=angle+i*TAU/7;
-    ellipsoid(b,[x+Math.cos(a)*.27*s,y+(.88+(i%3)*.07)*s,z+Math.sin(a)*.27*s],
-      [.17*s,.43*s,.20*s],i%3===0?'leafLight':i%3===1?'leaf':'leafDark',[.40*Math.sin(a),a,.40*Math.cos(a)],10);
-  }
-  ellipsoid(b,[x,y+1.1*s,z],[.19*s,.42*s,.20*s],'leafLight',[0,angle,0],10);
-}
-function palm(b,x,y,z,height=4.2,angle=0){
-  const bend=.5,pts=[];
-  for(let i=0;i<=7;i++){
-    const t=i/7;pts.push([x+Math.cos(angle)*bend*t*t,y+height*t,z+Math.sin(angle)*bend*t*t]);
-  }
-  tube(b,pts,.13,'wood');
-  for(let i=1;i<6;i++){
-    const t=i/7; cylinder(b,[x+Math.cos(angle)*bend*t*t,y+height*t-.04,z+Math.sin(angle)*bend*t*t],.155,.07,'woodDark',.15,9);
-  }
-  const cx=x+Math.cos(angle)*bend,cz=z+Math.sin(angle)*bend,cy=y+height;
-  for(let f=0;f<7;f++){
-    const a=angle+f*TAU/7,L=1.75+(f%3)*.18,vs=[],ix=[];
-    // Solid leaf blades, not alpha cards. Upper and lower surfaces share a spine.
-    for(let j=0;j<=7;j++){
-      const t=j/7,d=L*t,w=.34*Math.sin(Math.PI*t)+.012;
-      const h=.35*Math.sin(t*Math.PI)-.65*t*t;
-      for(const [side,off] of [[-1,0],[0,.08],[1,0],[0,-.035]])
-        vs.push([cx+Math.cos(a)*d-Math.sin(a)*w*side,cy+h+off,cz+Math.sin(a)*d+Math.cos(a)*w*side]);
-    }
-    for(let j=0;j<7;j++)for(let s=0;s<4;s++){
-      const k=j*4+s,next=j*4+(s+1)%4;ix.push(k,next,next+4,k,next+4,k+4);
-    }
-    const leaf=geometry(vs,ix).toNonIndexed();
-    leaf.computeVertexNormals();
-    b.add(leaf,f%3===0?'leafLight':f%3===1?'leaf':'leafDark',[0,0,0],[0,0,0],[1,1,1],false,'solid palm leaf');
-  }
-  for(let i=0;i<3;i++)ellipsoid(b,[cx+.15*Math.cos(i*2.1),cy-.13,cz+.15*Math.sin(i*2.1)],[.16,.20,.16],'woodDark');
 }
 function pillar(b,x,y,z,h=3.5,accent='coral',scale=1){
   const r=.46*scale;
@@ -160,10 +122,11 @@ function hub(b,config){
   cylinder(b,[0,y+.19,-1],1.69,.19,'ivory',1.64,48);
   cylinder(b,[0,y+.38,-1],1.48,.35,'salmon',1.45,48);
   cylinder(b,[0,y+.72,-1],1.55,.14,'porcelain',1.55,48);
-  cylinder(b,[0,y+.86,-1],1.30,.04,'woodDark',1.3,40);
+  cylinder(b,[0,y+.80,-1],1.30,.04,'woodDark',1.3,40);
   palm(b,0,y+.9,-1,3.6,.4);
   for(let i=0;i<7;i++){const a=i*TAU/7;
-    ellipsoid(b,[Math.cos(a)*.85,y+1.10,-1+Math.sin(a)*.85],[.36,.35,.40],i%2?'leaf':'leafLight');
+    rosette(b,Math.cos(a)*.79,y+.85,-1+Math.sin(a)*.79,.48,a,i);
+    if(i%2===0)flower(b,Math.cos(a)*1.03,y+.85,-1+Math.sin(a)*1.03,.20,'pink',a);
   }
   // Broad, integrated entrance steps and a substantial arch facade.
   for(let i=0;i<3;i++){
@@ -210,8 +173,9 @@ function hub(b,config){
     for(let i=0;i<6;i++){
       const th=lo+.045+i*(hi-lo-.09)/5;
       const px=x+Math.cos(th)*rr,pz=z+Math.sin(th)*rr;
-      ellipsoid(b,[px,y+.95,pz],[.30,.43,.31],i%3?'leaf':'leafLight',[.1,th,.1],10);
-      ellipsoid(b,[px+Math.cos(th)*.24,y+.89,pz+Math.sin(th)*.24],[.19,.29,.21],'leafDark',[.2,th,.2],10);
+      rosette(b,px,y+.71,pz,.33,th,i);
+      if(i%2===0)leafySprig(b,px,y+.71,pz,.50,th);
+      else flower(b,px,y+.71,pz,.23,i%3?'porcelain':'pink',th);
     }
   }
   // Low arrival steps in the front opening.
@@ -359,16 +323,7 @@ function sea(b){
     box(b,[x,SEA+.008,z],[length,.018,.035],i%4?'seaLight':'foam',.007,.25+rnd()*.2);
   }
 }
-function rocks(b,config){
-  const rnd=seeded(config.seed);
-  for(const [x,z,r,h] of [[-17,-17,2.2,1.9],[17,-18,2.9,2.6],[7,17,1.7,1.5],[-34,-2,2.0,1.8],[33,-9,2.2,2.4],[-5,20,1.1,1.3]]){
-    const y=SEA+h*.45;
-    for(let k=0;k<4;k++)b.add(new THREE.DodecahedronGeometry(1,0),k%2?'stoneLight':'stone',
-      [x+Math.cos(k*1.8)*r*.3,y,z+Math.sin(k*1.8)*r*.3],[.1,k,.15],[r*.72,h,r*.72]);
-    ellipsoid(b,[x,y+h*.78,z],[r*.65,.15,r*.60],'grass');
-    if(config.greenery)palm(b,x,y+h*.83,z,2.1+rnd()*.3,x);
-  }
-}
+function rocks(b,config){offshore(b,config,SEA);}
 function bean(b,x,y,z,col,hat='blue',yaw=0){
   const cs=Math.cos(yaw),sn=Math.sin(yaw),p=(a,h,d)=>[x+a*cs+d*sn,y+h,z-a*sn+d*cs];
   // Scale figures only, not a substitute for the untouched DuderLab asset rig.
@@ -415,6 +370,7 @@ export function buildCoast(materials,options={}){
   root.traverse(o=>{if(o.isMesh){stats.draws++;stats.triangles+=o.geometry.index.count/3;stats.vertices+=o.geometry.attributes.position.count;}});
   const metadata={...root.userData,sites:SITES,bridges:bridgeData,stats,anchors:Object.fromEntries(anchors.children.map(a=>[a.name,a.position.toArray()])),
     clearance:{hubPaths:hubPaths(),skatePlan:SKATE_PLAN,scope:'Authored arrival paths and skate run-out only; not navmesh or gameplay collision.'},
+    botany:{version:1,islets:ISLETS,solidLeaves:true,alphaCards:0,layoutUnchanged:true},
     rendering:{opaque:true,transparentMaterials:0,paletteAtlas:'128x128',matteRoughness:.94,heroRoughness:.82,metalness:0},
     notes:['Preview figures are not DuderLab rigs and are excluded from GLB.','No colliders, gameplay or Unity package included.','Static scenery includes dock, boat and skate props.']};
   return {root,crowd,stats,metadata,chunks};
