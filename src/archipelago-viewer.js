@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
 import {buildArchipelago,DEFAULT_ARCHIPELAGO} from './archipelago.mjs';
+const TAU=Math.PI*2;
 
 const canvas=document.querySelector('#screen');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});

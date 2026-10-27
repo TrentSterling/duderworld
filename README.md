@@ -33,7 +33,7 @@ npm run test:archipelago
 npm run export:worldmeta # optional recipe/output arguments
 ```
 
-**Important scope note:** the V0.4 standalone studio uses a simplified geometry preview. The existing V0.3 Three.js source retains its higher-detail 305,750-triangle art and now accepts `{islandCount, topology, variation, spread}`. Existing V0.3 prebuilt GLB and HTML remain unchanged. In the V0.3 generator, some decorative physics toys are still baked into the scenery; the metadata defines future separately spawned interactables for Unity, rather than claiming those have been decoupled already.
+**Important scope note:** the V0.4 standalone studio uses a simplified geometry preview. The existing V0.3 Three.js source retains its higher-detail 305,750-triangle art and now accepts `{islandCount, topology, variation, spread}`. The V0.3 prebuilt GLB is unchanged. The V0.3 HTML is the original V0.3 build plus one boot fix: its viewer used an undeclared `TAU`, so it never got past "Generating archipelago...". Rebuilding it from current source with `npm run build:archipelago` also adds the V0.4 layout controls. In the V0.3 generator, some decorative physics toys are still baked into the scenery; the metadata defines future separately spawned interactables for Unity, rather than claiming those have been decoupled already.
 
 ---
 
