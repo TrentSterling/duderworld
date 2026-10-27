@@ -1,4 +1,4 @@
-name: Validate geometry and prepare offline review
+name: Validate geometry and prepare Coast preview
 
 on:
   push:
@@ -18,25 +18,29 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - name: Install locked dependencies
         run: npm ci
-      - name: Run geometry and build checks
-        run: npm test
-      - name: Package an offline review workspace
-        if: always()
+      - name: Run geometry and legacy build checks
         shell: bash
         run: |
           set -euo pipefail
-          git rev-parse HEAD > REVIEW_COMMIT.txt
-          tar --exclude='./.git' --exclude='./.github' -czf "$RUNNER_TEMP/duderworld-workspace.tar.gz" .
-      - name: Upload review workspace
-        if: always()
+          mkdir -p output/coast-release
+          npm test | tee output/coast-release/tests.log
+      - name: Build the self-contained Coast preview
+        run: npm run build:coast
+      - name: Prepare immutable build blobs without changing branches
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node qa/prepare-coast-blobs.mjs
+      - name: Upload the build and verification manifest
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
-          name: duderworld-workspace
-          path: ${{ runner.temp }}/duderworld-workspace.tar.gz
-          retention-days: 1
+          name: duderworld-coast-release
+          path: output/coast-release/
+          retention-days: 7
