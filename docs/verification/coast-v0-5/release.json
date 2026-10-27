@@ -1,0 +1,48 @@
+{
+  "version": "0.5.0",
+  "sourceCommit": "a9dabdfd88c38f6091b4abf03b49e9359456c924",
+  "html": {
+    "path": "duderworld-coast-v0-5.html",
+    "bytes": 615199,
+    "sha256": "6c6b7266aec5b98772c61e7309b898b31666a9e15b1c7a164fe595e24befe793",
+    "localBrowserTestedBuildMatchesCIBuildExactly": true
+  },
+  "geometry": {
+    "triangles": 201872,
+    "indexedVertices": 198827,
+    "sceneryMeshes": 9,
+    "materials": 2,
+    "atlasDimensions": [128, 128],
+    "sha256": "3c2cd441c30d3ea46649c995d14d98e2c37394420d97258fa36954fc371002b3",
+    "testsPassed": true,
+    "legacySuitesPassed": 4
+  },
+  "browser": {
+    "runtime": "Chromium with ANGLE SwiftShader under Xvfb",
+    "execution": "Exact standalone HTML through Playwright set_content; not live URL navigation",
+    "cameraCaptures": ["overview", "hub", "skate", "beach"],
+    "nonblankCaptures": true,
+    "viewerConsoleErrors": 0,
+    "viewerPageErrors": 0,
+    "viewerWarnings": 0,
+    "externalRuntimeRequests": 0,
+    "controlsAndDownloadsPassed": true,
+    "steadyMainViewCallsSceneryOnly": 9,
+    "steadyMainViewCallsWithScaleFigures": 10,
+    "note": "Shadow-map work is additional. These are not hardware performance measurements."
+  },
+  "glbRoundtrip": {
+    "bytes": 8083332,
+    "meshes": 9,
+    "materials": 2,
+    "embeddedAtlasImages": 1,
+    "opaque": true,
+    "maxPositionNormalUVDifference": 0,
+    "indicesUnchanged": true,
+    "previewFiguresExcluded": true,
+    "namedAnchors": 6,
+    "note": "QA-only second Three.js loader bundle emits a duplicate-import warning; the normal viewer does not."
+  },
+  "notTested": ["Unity import", "Quest or hardware performance", "gameplay or physical collision"],
+  "preserved": ["static.html", "duderworld-v0-3.html", "duderworld-lobby-v0-2.html", "existing GLB files", "DuderLab repository"]
+}

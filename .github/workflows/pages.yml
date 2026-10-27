@@ -35,7 +35,7 @@ jobs:
           set -euo pipefail
           mkdir -p _site
           cp static.html _site/index.html
-          cp static.html duderworld-v0-3.html duderworld-lobby-v0-2.html THIRD_PARTY_NOTICES.md _site/
+          cp static.html duderworld-v0-3.html duderworld-lobby-v0-2.html duderworld-coast-v0-5.html THIRD_PARTY_NOTICES.md _site/
           touch _site/.nojekyll
 
       - name: Upload Pages artifact

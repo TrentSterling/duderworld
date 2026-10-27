@@ -1,3 +1,13 @@
+# DuderWorld Coast V0.5: compact visual study
+
+[Open the Coast preview](https://tront.xyz/duderworld/duderworld-coast-v0-5.html) | [Offline HTML](duderworld-coast-v0-5.html) | [Modeling, export and verification notes](docs/coast-v0-5.md)
+
+A separate Three.js art pass: a compact portal courtyard, recessed skatepark and low beach connected by supported bridges. One 128x128 palette atlas, two opaque materials, nine static scenery batches. Preview scale figures are not DuderLab rigs and are excluded from GLB. No Unity package, networking or gameplay was added. The existing V0.2/V0.3/V0.4 previews and the default studio remain unchanged.
+
+Build with `npm run build:coast`; validate with `npm test`. See the notes for actual browser and GLB round-trip checks, rendering costs and limitations.
+
+---
+
 # DuderWorld V0.4 — procedural level generation for TrontEOS
 
 DuderWorld prototypes environment meshes and level layouts for **Tront EOS lobby demo and minigame samples**. [DuderLab](https://github.com/TrentSterling/duderlab) prototypes the characters. These browser tools let us inspect and improve the geometry before approved meshes are brought into Unity for the samples.
