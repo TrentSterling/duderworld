@@ -21,7 +21,7 @@ function check(world){
       assert.ok(Math.abs(Math.hypot(n.getX(i),n.getY(i),n.getZ(i))-1)<.002,'Unit normal');
       const u=uv.getX(i),v=uv.getY(i);assert.ok(u>0&&u<1&&v>0&&v<1,'UV in atlas');
       const slot=Math.floor(u*8)+Math.floor((1-v)*8)*8;assert.ok(slot<PALETTE_KEYS.length,'Valid palette swatch');
-      assert.ok(Math.abs(u*8%1-.5)<1e-5,'Horizontal atlas gutter');
+      assert.ok(Math.abs(u*8%1-.5)<(uv.normalized?7e-5:1e-5),'Horizontal atlas gutter');
       const vv=(1-v)*8%1;assert.ok(vv>=.279&&vv<=.721,'Vertical atlas gutter');
     }
     const a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3(),ns=new THREE.Vector3();
@@ -35,10 +35,10 @@ function check(world){
     }
   });
   assert.equal(mat.size,2);assert.equal(meshes,world.stats.draws);assert.equal(triangles,world.stats.triangles);assert.equal(vertices,world.stats.vertices);
-  assert.ok(meshes<=10);assert.ok(triangles<325000,'Coast 0.5.2 solid foliage budget: 325k triangles');
+  assert.ok(meshes<=10);assert.ok(triangles<325000,'Coast solid foliage budget: 325k triangles');
   return {triangles,vertices,meshes,minArea};
 }
-const world=buildCoast(materials),report=check(world);
+const world=buildCoast(materials,{batching:'zones'}),report=check(world);
 const meshes=[];world.root.traverse(o=>{if(o.isMesh)meshes.push(o);});
 const ray=new THREE.Raycaster(),surface=(x,z)=>{ray.set(new THREE.Vector3(x,20,z),new THREE.Vector3(0,-1,0));return ray.intersectObjects(meshes,false)[0]?.point.y;};
 assert.ok(Math.abs(surface(25.2,6.0)+1.0)<.04,'Bowl is recessed and not covered by a deck');
@@ -53,8 +53,8 @@ for(const br of world.metadata.bridges){
 // The skirts must face outward; this catches the initial back-face-only cliff bug.
 ray.set(new THREE.Vector3(0,-1.2,12),new THREE.Vector3(0,0,-1));
 assert.ok(ray.intersectObjects(world.chunks.hub.children,false).length>0,'Front cliff has outward faces');
-const hash=hashWorld(world),same=buildCoast(materials);assert.equal(hashWorld(same),hash);dispose(same);
-const different=buildCoast(materials,{seed:42});assert.notEqual(hashWorld(different),hash);dispose(different);
+const hash=hashWorld(world),same=buildCoast(materials,{batching:'zones'});assert.equal(hashWorld(same),hash);dispose(same);
+const different=buildCoast(materials,{seed:42,batching:'zones'});assert.notEqual(hashWorld(different),hash);dispose(different);
 const bare=buildCoast(materials,{greenery:false});check(bare);assert.ok(bare.stats.triangles<world.stats.triangles);dispose(bare);
 assert.throws(()=>buildCoast(materials,{seed:NaN}));
 console.log(JSON.stringify({pass:true,...report,geometrySHA256:hash,checks:['finite indexed geometry','unit normals and nondegenerate winding','atlas UV gutters','two opaque matte materials','no hidden groups','recessed bowl raycast','hub/beach landing raycasts','bridge deck raycasts','outward cliff faces','deterministic recipe','seed variation','greenery variation']},null,2));

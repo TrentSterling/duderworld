@@ -4,10 +4,12 @@ import * as THREE from 'three';
 import {Batch,TAU,box,ellipsoid,cylinder,bar,tube,slab,ellipsePoints,arcBlock,
   floorTile,roundedArch,geometry,seeded} from './coast-kit.mjs';
 
+import {trimCoplanarCoverage,mergeStaticBatches,removeBuriedDeckFaces} from './coast-optimize.mjs';
+
 import {buildSkate,SKATE_PLAN} from './coast-skate.mjs';
 import {planter as plant,palm,rosette,leafySprig,flower,grassClump,offshore,ISLETS} from './coast-botany.mjs';
 
-export const COAST_VERSION='0.5.2';
+export const COAST_VERSION='0.5.3';
 export const SITES=Object.freeze({hub:{x:0,z:-4,r:12,y:.65},skate:{x:23,z:5,r:10.4,y:.65},beach:{x:-22,z:9,r:8.8,y:-2.45}});
 const SEA=-3.45;
 function islandRadius(r,a,seed=0){return r*(1+.024*Math.sin(a*5+seed)+.018*Math.cos(a*9));}
@@ -310,7 +312,7 @@ function bridge(b,a,c){
   return {from:a===SITES.hub?'hub':'unknown',to:c===SITES.skate?'skate':'beach',width:3.55,start:pt(start,0),end:pt(end,0)};
 }
 function sea(b){
-  const n=38,size=180,v=[],ix=[];
+  const n=1,size=180,v=[],ix=[]; // Identical flat ocean, two triangles instead of 2,888.
   for(let j=0;j<=n;j++)for(let i=0;i<=n;i++)v.push([(i/n-.5)*size,SEA-.035,(j/n-.5)*size]);
   for(let j=0;j<n;j++)for(let i=0;i<n;i++){const k=j*(n+1)+i;ix.push(k,k+n+2,k+1,k,k+n+1,k+n+2);}
   b.add(geometry(v,ix),'sea');
@@ -340,7 +342,8 @@ function bean(b,x,y,z,col,hat='blue',yaw=0){
   }
 }
 export function buildCoast(materials,options={}){
-  const config={seed:20261027,greenery:true,...options};
+  const config={seed:20261027,greenery:true,batching:'merged',cleanup:true,...options};
+  if(!['merged','zones'].includes(config.batching))throw Error('Unknown batching mode');
   if(!Number.isFinite(config.seed))throw Error('seed must be finite');
   const root=new THREE.Group();root.name='DuderWorld_Coast_v0_5';
   root.userData={version:COAST_VERSION,units:'meters',upAxis:'+Y',scope:'static environment prototype',seed:config.seed};
@@ -366,9 +369,12 @@ export function buildCoast(materials,options={}){
   bean(people,-22,SITES.beach.y+.05,9,'violet','coral',.8);
   bean(people,-17.5,SITES.beach.y+.05,11.3,'aqua','ivory',-.2);
   const crowd=people.finish(materials);crowd.name='Preview_figures_NOT_EXPORTED';
-  const stats={triangles:0,vertices:0,draws:0,materials:2,atlasSize:128};
-  root.traverse(o=>{if(o.isMesh){stats.draws++;stats.triangles+=o.geometry.index.count/3;stats.vertices+=o.geometry.attributes.position.count;}});
-  const metadata={...root.userData,sites:SITES,bridges:bridgeData,stats,anchors:Object.fromEntries(anchors.children.map(a=>[a.name,a.position.toArray()])),
+  const buried=config.cleanup?removeBuriedDeckFaces(root,SITES):null;
+  const cleanup=config.cleanup?trimCoplanarCoverage(root):null;
+  const batching=config.batching==='merged'?mergeStaticBatches(root):null;
+  const stats={triangles:0,vertices:0,draws:0,materials:2,atlasSize:128,geometryBytes:0};
+  root.traverse(o=>{if(o.isMesh){stats.draws++;stats.triangles+=o.geometry.index.count/3;stats.vertices+=o.geometry.attributes.position.count;stats.geometryBytes+=Object.values(o.geometry.attributes).reduce((n,a)=>n+a.array.byteLength,0)+o.geometry.index.array.byteLength;}});
+  const metadata={...root.userData,optimization:{buried,cleanup,batching,mode:config.batching},sites:SITES,bridges:bridgeData,stats,anchors:Object.fromEntries(anchors.children.map(a=>[a.name,a.position.toArray()])),
     clearance:{hubPaths:hubPaths(),skatePlan:SKATE_PLAN,scope:'Authored arrival paths and skate run-out only; not navmesh or gameplay collision.'},
     botany:{version:1,islets:ISLETS,solidLeaves:true,alphaCards:0,layoutUnchanged:true},
     rendering:{opaque:true,transparentMaterials:0,paletteAtlas:'128x128',matteRoughness:.94,heroRoughness:.82,metalness:0},

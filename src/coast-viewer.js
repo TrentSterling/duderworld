@@ -25,7 +25,16 @@ try {
   const orbit=new OrbitControls(camera,canvas);orbit.enableDamping=true;orbit.dampingFactor=.14;
   orbit.minZoom=.45;orbit.maxZoom=5;orbit.maxPolarAngle=Math.PI*.49;
   orbit.mouseButtons={LEFT:THREE.MOUSE.ROTATE,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:THREE.MOUSE.PAN};
-  let extent=24.5,dirty=true,preset='all',wireframe=false;
+  let extent=24.5,dirty=true,preset='all',wireframe=false,framePending=0;
+  const worldBounds=new THREE.Box3().setFromObject(world.root);
+  const depthCorners=[];for(const x of [worldBounds.min.x,worldBounds.max.x])for(const y of [worldBounds.min.y,worldBounds.max.y])for(const z of [worldBounds.min.z,worldBounds.max.z])depthCorners.push(new THREE.Vector3(x,y,z));
+  const depthPoint=new THREE.Vector3();
+  function requestRender(){dirty=true;if(!framePending)framePending=requestAnimationFrame(frame);}
+  function fitDepth(){
+    camera.updateMatrixWorld();let near=Infinity,far=-Infinity;
+    for(const corner of depthCorners){const depth=-depthPoint.copy(corner).applyMatrix4(camera.matrixWorldInverse).z;near=Math.min(near,depth);far=Math.max(far,depth);}
+    camera.near=Math.max(.1,near-2);camera.far=Math.max(camera.near+1,far+2);camera.updateProjectionMatrix();
+  }
   const presets={
     all:{target:[0,.3,0],offset:[24,64,68],extent:22.0},
     hub:{target:[0,1,-4],offset:[15,27,31],extent:13.5},
@@ -43,7 +52,7 @@ try {
     const w=innerWidth,h=innerHeight,aspect=w/h;renderer.setSize(w,h,false);
     const framedExtent=Math.max(extent,extent*1.45/aspect);
     camera.left=-framedExtent*aspect;camera.right=framedExtent*aspect;camera.top=framedExtent;camera.bottom=-framedExtent;
-    camera.updateProjectionMatrix();dirty=true;
+    camera.updateProjectionMatrix();requestRender();
   }
   function saveBlob(data,name,type){
     const url=URL.createObjectURL(new Blob([data],{type})),a=document.createElement('a');
@@ -61,8 +70,8 @@ try {
     }catch(e){$('#status').textContent='Export failed: '+e.message;throw e;}
     finally{exporting=false;$('#export').disabled=false;}
   }
-  function figureVisibility(value){world.crowd.visible=value;renderer.shadowMap.needsUpdate=true;dirty=true;$('#figures').classList.toggle('active',value);}
-  function toggleWire(){wireframe=!wireframe;materials.matte.wireframe=materials.hero.wireframe=wireframe;dirty=true;$('#wire').classList.toggle('active',wireframe);}
+  function figureVisibility(value){world.crowd.visible=value;renderer.shadowMap.needsUpdate=true;requestRender();$('#figures').classList.toggle('active',value);}
+  function toggleWire(){wireframe=!wireframe;materials.matte.wireframe=materials.hero.wireframe=wireframe;requestRender();$('#wire').classList.toggle('active',wireframe);}
   for(const b of document.querySelectorAll('[data-view]'))b.onclick=()=>setPreset(b.dataset.view);
   $('#export').onclick=()=>exportGLB().catch(console.error);
   $('#metadata').onclick=()=>saveBlob(JSON.stringify(world.metadata,null,2),'duderworld-coast-v0-5.json','application/json');
@@ -79,26 +88,26 @@ try {
     if(e.key.toLowerCase()==='d')figureVisibility(!world.crowd.visible);
     if(e.key.toLowerCase()==='w')toggleWire();
   });
-  orbit.addEventListener('change',()=>dirty=true);
+  orbit.addEventListener('change',requestRender);
   const statsText=`${world.stats.triangles.toLocaleString()} tris / ${world.stats.draws} scenery batches / 2 opaque materials / 128px atlas`;
   $('#stats').textContent=statsText;$('#version').textContent=COAST_VERSION;
   $('#status').textContent='Orbit: drag / Pan: right-drag / Zoom: wheel / 1-4: cameras / H: hide UI';
   setPreset(new URLSearchParams(location.search).get('camera')||'all');
   let frames=0;
   function frame(){
-    orbit.update();
-    if(dirty){renderer.render(scene,camera);dirty=false;frames++;}
-    requestAnimationFrame(frame);
+    framePending=0;const changed=orbit.update();
+    if(dirty||changed){fitDepth();renderer.render(scene,camera);dirty=false;frames++;}
+    if(changed&&!framePending)framePending=requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+  requestRender();
   // Readable QA hooks use the actual rendered scene, never a substitute renderer.
   window.DuderWorld={version:COAST_VERSION,world,renderer,scene,camera,orbit,materials,
-    setPreset,exportGLB,figureVisibility,requestRender(){dirty=true;},
+    setPreset,exportGLB,figureVisibility,requestRender,
     getReport(){return{version:COAST_VERSION,preset,frames,stats:world.stats,
       renderer:{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures},
       opaque:[materials.matte,materials.hero].every(m=>!m.transparent&&m.opacity===1&&m.alphaTest===0),
       roughness:[materials.matte.roughness,materials.hero.roughness],previewFigures:world.crowd.visible,
-      webgl:renderer.capabilities.isWebGL2,canvas:[canvas.width,canvas.height]};}
+      depthRange:[camera.near,camera.far],framePending:!!framePending,webgl:renderer.capabilities.isWebGL2,canvas:[canvas.width,canvas.height]};}
   };
   document.body.dataset.ready='true';
 }catch(e){$('#status').textContent='Could not start: '+e.message;$('#status').classList.add('error');console.error(e);}

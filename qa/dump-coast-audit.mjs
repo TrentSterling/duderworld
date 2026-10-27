@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import * as THREE from 'three';
+import {buildCoast} from '../src/coast-world.mjs';
+const w=buildCoast({matte:new THREE.MeshStandardMaterial(),hero:new THREE.MeshStandardMaterial()});
+const out=process.argv[2]||'output/coast-audit';fs.mkdirSync(out,{recursive:true});
+let list=[];
+w.root.traverse(m=>{if(!m.isMesh)return;const g=m.geometry;const name=m.name.replaceAll('.','_');
+for(const a of ['position','normal','uv'])fs.writeFileSync(`${out}/${name}-${a}.bin`,Buffer.from(g.attributes[a].array.buffer));
+fs.writeFileSync(`${out}/${name}-index.bin`,Buffer.from(new Uint32Array(g.index.array).buffer));
+list.push({name:m.name,file:name,vertices:g.attributes.position.count,triangles:g.index.count/3,attributeFormats:Object.fromEntries(Object.entries(g.attributes).map(([key,a])=>[key,{type:a.array.constructor.name,itemSize:a.itemSize,normalized:a.normalized}])),parts:m.userData.parts,bytes:['position','normal','uv'].reduce((v,k)=>v+g.attributes[k].array.byteLength,0)+g.index.array.byteLength});});
+fs.writeFileSync(`${out}/manifest.json`,JSON.stringify(list));console.log(JSON.stringify({stats:w.stats,meshes:list.map(({parts,...rest})=>rest)},null,2));
