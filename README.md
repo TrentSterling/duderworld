@@ -1,7 +1,16 @@
 # DuderWorld V0.4 — procedural level generation for TrontEOS
 
-**Standalone offline V0.4 layout studio:** [static.html](static.html).
-**Original V0.3 authored world and GLB remain intact:** [duderworld-v0-3.html](duderworld-v0-3.html).
+DuderWorld prototypes environment meshes and level layouts for **Tront EOS lobby demo and minigame samples**. [DuderLab](https://github.com/TrentSterling/duderlab) prototypes the characters. These browser tools let us inspect and improve the geometry before approved meshes are brought into Unity for the samples.
+
+## Browser previews
+
+| Preview | GitHub Pages | Offline file |
+| --- | --- | --- |
+| Current V0.4 layout studio | [Open DuderWorld](https://trentsterling.github.io/duderworld/) | [static.html](static.html) |
+| Preserved higher-detail V0.3 Three.js world | [Open the V0.3 mesh preview](https://trentsterling.github.io/duderworld/duderworld-v0-3.html) | [duderworld-v0-3.html](duderworld-v0-3.html) |
+| Character prototyping companion | [Open DuderLab](https://trentsterling.github.io/duderlab/) | [DuderLab repository](https://github.com/TrentSterling/duderlab) |
+
+GitHub Pages provides hosted mesh and layout previews. The intended game runtime, networking and sample gameplay belong in Unity/Tront EOS. The original V0.3 authored world and GLB remain preserved alongside the current V0.4 studio.
 
 V0.4 is a **tooling upgrade**, not a multiplayer minigame: DuderLab creates characters, DuderWorld builds environments, and Unity/TrontEOS owns networking, rigidbodies, gameplay and final runtime assembly. The offline studio is a lightweight WebGL/Canvas inspection tool. It is deliberately *not* a replacement for the full V0.3 art; the production `src/archipelago.mjs` now consumes the same deterministic layout graph.
 
@@ -27,7 +36,7 @@ npm run export:worldmeta # optional recipe/output arguments
 
 # DuderWorld V0.3 — Tront-EOS social archipelago
 
-**The newest scene is [duderworld-v0-3.html](duderworld-v0-3.html).** Open it
+**The preserved higher-detail V0.3 scene is [duderworld-v0-3.html](duderworld-v0-3.html).** Open it
 directly in a modern desktop browser: it is a **self-contained, offline**
 Three.js island world, no server, license-sensitive imported models, or CDN.
 
@@ -139,6 +148,14 @@ Independent Mesa/GLES captures in `docs/media/` confirm the *same generated geom
 ## Unity handoff
 
 Import the `.glb` with a glTF-compatible importer in Unity, then add static colliders, spawn points, navigation, interaction volumes and EOS networking. Those systems are intentionally out of scope here. A single merged mesh is easy to render and rigidly bake, but you'll likely want per-room collision proxies and instanced decoration for a shipping scene with many copies.
+
+## Publishing the browser previews
+
+`.github/workflows/pages.yml` deploys on pushes to `main` and can also be run manually from the Actions tab. The repository's **Settings → Pages → Build and deployment → Source** must be set to **GitHub Actions** before deployment can succeed.
+
+The workflow publishes only the committed browser previews and their third-party notices: `static.html` becomes the site's `index.html` and remains available at its original filename, while `duderworld-v0-3.html` retains its existing URL. It does not rebuild or publish the source tree, GLB archives, concept images, or QA captures.
+
+After changing the V0.4 studio source, run `npm run build:studio` and commit the updated `static.html` with the source. **Do not use `npm run build` to refresh Pages:** that historical V0.2 command overwrites `static.html`. Updating the preserved V0.3 browser preview is a separate, deliberate `npm run build:archipelago` operation.
 
 ## Bundled licenses
 
