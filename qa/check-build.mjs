@@ -4,7 +4,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {buildWorld} from '../src/world.mjs';
 import {strict as assert} from 'node:assert';
 
-const html=readFileSync(new URL('../static.html',import.meta.url),'utf8');
+const html=readFileSync(new URL('../duderworld-lobby-v0-2.html',import.meta.url),'utf8');
 const glb=readFileSync(new URL('../duderworld-lobby-v0-2.glb',import.meta.url));
 assert.equal((html.match(/<script\b/g)||[]).length,1,'standalone uses one bundled script');
 assert.ok(!/<(?:script|link)\b[^>]*(?:src|href)\s*=/i.test(html),'no dependent scripts/stylesheets');

@@ -17,5 +17,5 @@ const threeLicense=readFileSync(join(root,'node_modules/three/LICENSE'),'utf8');
 // which String.replace would otherwise interpret as substitution tokens.
 const html=template.replace('/* INLINE_GENERATED_CODE */',()=>js)
   .replace('<!doctype html>','<!doctype html>\n<!--\n'+threeLicense+'\n-->');
-writeFileSync(join(root,'static.html'),html,'utf8');
+writeFileSync(join(root,'duderworld-lobby-v0-2.html'),html,'utf8');
 console.log('DuderWorld V0.2 (Three.js):',Buffer.byteLength(html).toLocaleString(),'bytes; SHA256',createHash('sha256').update(html).digest('hex'));

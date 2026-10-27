@@ -2,12 +2,15 @@
 
 DuderWorld prototypes environment meshes and level layouts for **Tront EOS lobby demo and minigame samples**. [DuderLab](https://github.com/TrentSterling/duderlab) prototypes the characters. These browser tools let us inspect and improve the geometry before approved meshes are brought into Unity for the samples.
 
+**Scope:** DuderWorld is a browser prototyping lab for environment and level geometry, not a web game. The hosted pages are development previews for inspecting and comparing iterations: the V0.4 studio is plain WebGL2 with a Canvas2D fallback, while the V0.3 world and V0.2 lobby are Three.js. Approved geometry gets converted to Unity locally later; this repository holds no Unity project, EOS networking, or gameplay code.
+
 ## Browser previews
 
 | Preview | GitHub Pages | Offline file |
 | --- | --- | --- |
 | Current V0.4 layout studio | [Open DuderWorld](https://trentsterling.github.io/duderworld/) | [static.html](static.html) |
 | Preserved higher-detail V0.3 Three.js world | [Open the V0.3 mesh preview](https://trentsterling.github.io/duderworld/duderworld-v0-3.html) | [duderworld-v0-3.html](duderworld-v0-3.html) |
+| Preserved V0.2 lobby interior | [Open the V0.2 lobby](https://trentsterling.github.io/duderworld/duderworld-lobby-v0-2.html) | [duderworld-lobby-v0-2.html](duderworld-lobby-v0-2.html) |
 | Character prototyping companion | [Open DuderLab](https://trentsterling.github.io/duderlab/) | [DuderLab repository](https://github.com/TrentSterling/duderlab) |
 
 GitHub Pages provides hosted mesh and layout previews. The intended game runtime, networking and sample gameplay belong in Unity/Tront EOS. The original V0.3 authored world and GLB remain preserved alongside the current V0.4 studio.
@@ -102,7 +105,7 @@ A parametric, dense 3D lobby environment for future **Tront-EOS** demo scenes. T
 
 ## Play with the level
 
-Open **`static.html`** directly in a WebGL2-capable browser. The single HTML file contains Three.js, OrbitControls, GLTFExporter, geometry code, shaders, and UI. It works using `file://` without a server or CDN.
+Open **`duderworld-lobby-v0-2.html`** directly in a WebGL2-capable browser. The single HTML file contains Three.js, OrbitControls, GLTFExporter, geometry code, shaders, and UI. It works using `file://` without a server or CDN.
 
 - Drag to orbit, right-drag to pan, scroll to zoom.
 - `T` switches the overhead orthographic camera on/off.
@@ -141,7 +144,7 @@ npm run bake
 npm test
 ```
 
-`npm run build` creates the offline `static.html` using esbuild. `npm run bake` creates the default GLB using Three.js `GLTFExporter`; the viewer's download button bakes whichever recipe is currently shown instead. `npm test` runs geometry checks across 27 width/depth/detail combinations plus a GLB roundtrip through Three.js's loader.
+`npm run build` creates the offline `duderworld-lobby-v0-2.html` using esbuild. `npm run bake` creates the default GLB using Three.js `GLTFExporter`; the viewer's download button bakes whichever recipe is currently shown instead. `npm test` runs geometry checks across 27 width/depth/detail combinations plus a GLB roundtrip through Three.js's loader.
 
 Independent Mesa/GLES captures in `docs/media/` confirm the *same generated geometry buffers* from two angles, using a deliberately basic validation shader rather than Three.js's lighting setup. They are not browser screenshots or performance measurements. The Three.js viewer is the intended interactive visual reference.
 
@@ -153,9 +156,9 @@ Import the `.glb` with a glTF-compatible importer in Unity, then add static coll
 
 `.github/workflows/pages.yml` deploys on pushes to `main` and can also be run manually from the Actions tab. The repository's **Settings → Pages → Build and deployment → Source** must be set to **GitHub Actions** before deployment can succeed.
 
-The workflow publishes only the committed browser previews and their third-party notices: `static.html` becomes the site's `index.html` and remains available at its original filename, while `duderworld-v0-3.html` retains its existing URL. It does not rebuild or publish the source tree, GLB archives, concept images, or QA captures.
+The workflow publishes only the committed browser previews and their third-party notices: `static.html` becomes the site's `index.html` and remains available at its original filename, while `duderworld-v0-3.html` and `duderworld-lobby-v0-2.html` keep their own URLs. It does not rebuild or publish the source tree, GLB archives, concept images, or QA captures.
 
-After changing the V0.4 studio source, run `npm run build:studio` and commit the updated `static.html` with the source. **Do not use `npm run build` to refresh Pages:** that historical V0.2 command overwrites `static.html`. Updating the preserved V0.3 browser preview is a separate, deliberate `npm run build:archipelago` operation.
+After changing the V0.4 studio source, run `npm run build:studio` and commit the updated `static.html` with the source. `npm run build` only regenerates the preserved V0.2 lobby (`duderworld-lobby-v0-2.html`) and no longer touches `static.html`. Updating the preserved V0.3 browser preview is a separate, deliberate `npm run build:archipelago` operation.
 
 ## Bundled licenses
 
